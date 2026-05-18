@@ -4,10 +4,13 @@ import AuthLayout from '../../components/AuthLayout';
 import FormInput from '../../components/FormInput';
 import { FaEnvelope, FaStore, FaLock, FaShieldAlt, FaPaperPlane, FaEye, FaEyeSlash } from 'react-icons/fa';
 import { sellerApi } from '../../hooks/sellerApi'; 
+import { useAuth } from '../../context/AuthContext'
 
 const StallOwnerLogin = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { loginSeller } = useAuth();
+
   const [formData, setFormData] = useState({
     email: '',
     password: ''
@@ -171,6 +174,9 @@ const StallOwnerLogin = () => {
       } else {
         setApiError('Login successful but unexpected response format');
       }
+
+      loginSeller(response);
+      navigate('/stall-owner/dashboard', { replace: true });
       
     } catch (error) {
       console.error('Login error:', error);

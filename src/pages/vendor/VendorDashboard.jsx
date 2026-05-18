@@ -25,9 +25,12 @@ import RejectModal from '../../components/vendor/dashboard/modals/RejectModal';
 import AssignLicenseModal from '../../components/vendor/dashboard/modals/AssignLicensesModal';
 import StallDetailsModal from '../../components/vendor/dashboard/modals/StallsDetailsModal';
 
+import { useAuth } from '../../context/AuthContext';
+
 const VendorDashboard = () => {
   const navigate = useNavigate();
   const [vendorData, setVendorData] = useState(null);
+  const { logoutVendor } = useAuth();
 
   // Stalls data
   const [pendingStalls, setPendingStalls] = useState([]);
@@ -40,15 +43,16 @@ const VendorDashboard = () => {
   const [licensesLoading, setLicensesLoading] = useState(false);
   const [licensesError, setLicensesError] = useState('');
 
-  // Active Offers data
+  // Active Offers & Flash Deals data
   const [activeOffers, setActiveOffers] = useState([]);
-  const [activeOffersLoading, setActiveOffersLoading] = useState(false);
-  const [activeOffersError, setActiveOffersError] = useState('');
-  const [activeOffersPagination, setActiveOffersPagination] = useState({
-    page: 1,
-    limit: 6,
-    total: 0,
-    totalPages: 1
+  const [activeFlashDeals, setActiveFlashDeals] = useState([]);
+  const [activeItemsLoading, setActiveItemsLoading] = useState(false);
+  const [activeItemsError, setActiveItemsError] = useState('');
+  
+  // Combined pagination for offers and flash deals
+  const [activeItemsPagination, setActiveItemsPagination] = useState({
+    offers: { page: 1, limit: 6, total: 0, totalPages: 1 },
+    flashdeals: { page: 1, limit: 6, total: 0, totalPages: 1 }
   });
 
   // Events data
@@ -64,9 +68,9 @@ const VendorDashboard = () => {
   const [error, setError] = useState('');
   const [activeTab, setActiveTab] = useState('overview');
 
-  // ✅ FIXED: Declare userRole and canEditOffers as state
+  // User role state
   const [userRole, setUserRole] = useState('user');
-  const [canEditOffers, setCanEditOffers] = useState(false);
+  const [canEditItems, setCanEditItems] = useState(false);
 
   // Pagination state
   const [pagination, setPagination] = useState({
@@ -105,32 +109,28 @@ const VendorDashboard = () => {
   const [licenseItemsPerPage, setLicenseItemsPerPage] = useState(6);
   const [licenseCurrentPage, setLicenseCurrentPage] = useState(1);
 
-  // ✅ FIXED: Move getUserRole inside useEffect and properly declare
   useEffect(() => {
     const getUserRole = async () => {
       try {
-        // Try to get vendor profile first
         const response = await vendorApi.getVendorProfile();
         
         console.log('Vendor profile loaded:', response);
         
         if (response?.success && response?.data) {
-          // Check if user is a vendor or seller
           const role = response.data.role || response.data.userType;
           
           console.log('User role detected:', role);
           
           if (role === 'vendor' || role === 'seller') {
             setUserRole(role);
-            setCanEditOffers(true);
-            console.log('Edit offers enabled:', true);
+            setCanEditItems(true);
+            console.log('Edit items enabled:', true);
           } else {
             setUserRole('user');
-            setCanEditOffers(false);
-            console.log('Edit offers disabled');
+            setCanEditItems(false);
+            console.log('Edit items disabled');
           }
         } else {
-          // Check localStorage for role
           const storedVendorData = localStorage.getItem('vendorData');
           if (storedVendorData) {
             try {
@@ -138,7 +138,7 @@ const VendorDashboard = () => {
               const role = parsedData.role || parsedData.userType;
               if (role === 'vendor' || role === 'seller') {
                 setUserRole(role);
-                setCanEditOffers(true);
+                setCanEditItems(true);
                 console.log('Role from localStorage:', role);
               }
             } catch (e) {
@@ -149,52 +149,90 @@ const VendorDashboard = () => {
       } catch (error) {
         console.error('Error getting user role:', error);
         setUserRole('user');
-        setCanEditOffers(false);
+        setCanEditItems(false);
       }
     };
 
     getUserRole();
-  }, []); // Empty dependency array means this runs once on mount
+  }, []);
 
   // ==================== SINGLE AUTH + BOOT useEffect ====================
   useEffect(() => {
     const checkAuthAndLoad = async () => {
+      // Check if authenticated in localStorage first
       if (!vendorApi.isAuthenticated()) {
-        navigate('/vendor/login');
+        navigate('/vendor/login', { replace: true });
         return;
       }
 
       try {
+        setLoading(true);
         const profile = await vendorApi.getVendorProfile();
 
         if (profile && (profile.success || profile.data || profile.vendor)) {
           await loadVendorData();
           await Promise.allSettled([
-            loadActiveOffers(),
+            loadActiveOffersAndFlashDeals(),
             loadVendorEvents(),
           ]);
         } else {
-          navigate('/vendor/login');
+          // Profile response indicates not authenticated
+          vendorApi.clearAuthData();
+          navigate('/vendor/login', { 
+            replace: true,
+            state: { message: 'Please login to continue.' }
+          });
         }
       } catch (err) {
         console.error('Auth check failed:', err);
+        
+        // ✅ Check for ANY auth-related error (403, 401, permission, access denied)
+        const isAuthError = 
+          err.message?.includes('401') ||
+          err.message?.includes('403') ||
+          err.message?.includes('expired') ||
+          err.message?.includes('permission') ||
+          err.message?.includes('Access denied') ||
+          err.message?.includes('authentication') ||
+          err.message?.includes('Unauthorized') ||
+          err.message?.includes('session') ||
+          err.status === 401 ||
+          err.status === 403;
 
-        if (err.message?.includes('expired') || err.message?.includes('401')) {
+        if (isAuthError) {
+          // Try token refresh first
           try {
+            console.log('Attempting token refresh...');
             await vendorApi.refreshToken();
+            console.log('Token refresh successful, retrying data load...');
+            
+            // Retry loading data
             await loadVendorData();
             await Promise.allSettled([
-              loadActiveOffers(),
+              loadActiveOffersAndFlashDeals(),
               loadVendorEvents(),
             ]);
-            return;
+            return; // Success - don't redirect
           } catch (refreshError) {
             console.error('Token refresh failed:', refreshError);
+            // Refresh failed - clear and redirect
           }
         }
 
+        // Clear auth and redirect
         vendorApi.clearAuthData();
-        navigate('/vendor/login');
+        setError('Your session has expired. Please login again.');
+        
+        // Short delay so user sees the message
+        setTimeout(() => {
+          navigate('/vendor/login', { 
+            replace: true,
+            state: { message: 'Your session has expired. Please login again.' }
+          });
+        }, 1500);
+        
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -242,6 +280,126 @@ const VendorDashboard = () => {
         } catch (_) {}
       }
     }
+  };
+
+// Replace the loadActiveOffersAndFlashDeals function
+  const loadActiveOffersAndFlashDeals = async () => {
+    try {
+      setActiveItemsLoading(true);
+      setActiveItemsError('');
+      
+      // Fetch offers and flash deals
+      const [offersResponse, flashDealsResponse] = await Promise.allSettled([
+        vendorApi.getMallActiveOffers(),
+        vendorApi.getMallActiveFlashDeals() // Use getVendorFlashDeals instead
+      ]);
+      
+      // Debug logs
+      console.log('=== FLASH DEALS RAW RESPONSE ===');
+      console.log('Flash deals response status:', flashDealsResponse.status);
+      if (flashDealsResponse.status === 'fulfilled') {
+        console.log('Flash deals response value:', flashDealsResponse.value);
+      }
+      
+      // Process offers
+      let offers = [];
+      if (offersResponse.status === 'fulfilled' && offersResponse.value) {
+        const response = offersResponse.value;
+        if (response?.success && response?.offers && Array.isArray(response.offers)) {
+          offers = response.offers;
+        } else if (response?.data && Array.isArray(response.data)) {
+          offers = response.data;
+        } else if (Array.isArray(response)) {
+          offers = response;
+        }
+      }
+      setActiveOffers(offers);
+      
+      // Process flash deals - try multiple possible response structures
+      let flashDeals = [];
+      if (flashDealsResponse.status === 'fulfilled' && flashDealsResponse.value) {
+        const response = flashDealsResponse.value;
+        
+        // Try different response structures
+        if (response?.success && response?.flashDeals && Array.isArray(response.flashDeals)) {
+          flashDeals = response.flashDeals;
+        } 
+        else if (response?.success && response?.data && Array.isArray(response.data)) {
+          flashDeals = response.data;
+        }
+        else if (response?.flashDeals && Array.isArray(response.flashDeals)) {
+          flashDeals = response.flashDeals;
+        }
+        else if (Array.isArray(response)) {
+          flashDeals = response;
+        }
+        
+        // If still empty, check if the response itself has flash deals data
+        if (flashDeals.length === 0 && response && typeof response === 'object') {
+          // Check for any array property that might contain flash deals
+          for (let key in response) {
+            if (Array.isArray(response[key]) && response[key].length > 0) {
+              console.log(`Found flash deals in property: ${key}`, response[key]);
+              flashDeals = response[key];
+              break;
+            }
+          }
+        }
+        
+        console.log('Extracted flash deals:', flashDeals);
+        console.log('Number of flash deals:', flashDeals.length);
+        
+        // Transform flash deals to ensure consistent field names
+        if (flashDeals.length > 0) {
+          flashDeals = flashDeals.map(deal => ({
+            ...deal,
+            _id: deal._id || deal.id,
+            title: deal.title || deal.flashDealTitle || deal.name,
+            description: deal.description || deal.flashDealDescription,
+            discountValue: deal.discountValue || deal.discount,
+            discountType: deal.discountType || deal.type,
+            startDate: deal.startDate || deal.flashDealStartTime,
+            endDate: deal.endDate || deal.flashDealEndTime,
+            flashDealImages: deal.flashDealImages || deal.images,
+            status: deal.status || (new Date(deal.endDate) > new Date() ? 'active' : 'expired')
+          }));
+        }
+      }
+      
+      setActiveFlashDeals(flashDeals);
+      
+      // Update pagination for both
+      updatePaginationForTab('offers', offers);
+      updatePaginationForTab('flashdeals', flashDeals);
+      
+      console.log('Loaded offers:', offers.length);
+      console.log('Loaded flash deals:', flashDeals.length);
+      
+    } catch (error) {
+      console.error('Error loading active items:', error);
+      setActiveItemsError(error.message || 'Failed to load active items');
+      setActiveOffers([]);
+      setActiveFlashDeals([]);
+    } finally {
+      setActiveItemsLoading(false);
+    }
+  };
+
+  // Update pagination for a specific tab
+  const updatePaginationForTab = (tab, data) => {
+    const limit = activeItemsPagination[tab].limit;
+    const total = data.length;
+    const totalPages = Math.ceil(total / limit) || 1;
+    
+    setActiveItemsPagination(prev => ({
+      ...prev,
+      [tab]: {
+        ...prev[tab],
+        total,
+        totalPages,
+        page: Math.min(prev[tab].page, totalPages)
+      }
+    }));
   };
 
   // Refresh handlers for each tab
@@ -292,6 +450,18 @@ const VendorDashboard = () => {
     } catch (error) {
       console.error('Error refreshing all stalls:', error);
       setError('Failed to refresh stalls');
+    } finally {
+      setActionLoading(prev => ({ ...prev, refreshing: false }));
+    }
+  };
+
+  const handleRefreshActiveItems = async () => {
+    setActionLoading(prev => ({ ...prev, refreshing: true }));
+    try {
+      await loadActiveOffersAndFlashDeals();
+    } catch (error) {
+      console.error('Error refreshing active items:', error);
+      setError('Failed to refresh active items');
     } finally {
       setActionLoading(prev => ({ ...prev, refreshing: false }));
     }
@@ -536,44 +706,11 @@ const VendorDashboard = () => {
   const handleLogout = async () => {
     try {
       await vendorApi.logoutVendor();
-      navigate('/vendor/login');
     } catch (error) {
       console.error('Logout error:', error);
-      vendorApi.clearAuthData();
-      navigate('/vendor/login');
-    }
-  };
-
-  const loadActiveOffers = async () => {
-    try {
-      setActiveOffersLoading(true);
-      setActiveOffersError('');
-      const response = await vendorApi.getMallActiveOffers();
-
-      console.log('Active offers response:', response);
-
-      let offers = [];
-      if (response?.success && response?.offers && Array.isArray(response.offers)) {
-        offers = response.offers;
-      } else if (response?.data && Array.isArray(response.data)) {
-        offers = response.data;
-      } else if (Array.isArray(response)) {
-        offers = response;
-      }
-
-      setActiveOffers(offers);
-      const totalPages = Math.ceil(offers.length / activeOffersPagination.limit);
-      setActiveOffersPagination(prev => ({
-        ...prev,
-        total: offers.length,
-        totalPages: totalPages || 1
-      }));
-    } catch (error) {
-      console.error('Error loading active offers:', error);
-      setActiveOffersError(error.message || 'Failed to load active offers');
-      setActiveOffers([]);
     } finally {
-      setActiveOffersLoading(false);
+      logoutVendor(); // ✅ clears vendorAuth state in context
+      navigate('/vendor/login');
     }
   };
 
@@ -701,19 +838,39 @@ const VendorDashboard = () => {
     }
   };
 
-  const handleActiveOffersPageChange = (newPage) => {
-    if (newPage >= 1 && newPage <= activeOffersPagination.totalPages) {
-      setActiveOffersPagination(prev => ({
+  // Combined pagination handler for offers and flash deals
+  const handleActiveItemsPageChange = (tab, newPage, newLimit = null) => {
+    if (newLimit && newLimit !== activeItemsPagination[tab].limit) {
+      // Limit changed, recalculate total pages
+      const items = tab === 'offers' ? activeOffers : activeFlashDeals;
+      const totalPages = Math.ceil(items.length / newLimit);
+      setActiveItemsPagination(prev => ({
         ...prev,
-        page: newPage
+        [tab]: {
+          ...prev[tab],
+          limit: newLimit,
+          totalPages: totalPages || 1,
+          page: 1
+        }
+      }));
+    } else if (newPage >= 1 && newPage <= activeItemsPagination[tab].totalPages) {
+      setActiveItemsPagination(prev => ({
+        ...prev,
+        [tab]: {
+          ...prev[tab],
+          page: newPage
+        }
       }));
     }
   };
 
-  const getPaginatedOffers = () => {
-    const start = (activeOffersPagination.page - 1) * activeOffersPagination.limit;
-    const end = start + activeOffersPagination.limit;
-    return activeOffers.slice(start, end);
+  // Get paginated items for a specific tab
+  const getPaginatedActiveItems = (tab) => {
+    const items = tab === 'offers' ? activeOffers : activeFlashDeals;
+    const { page, limit } = activeItemsPagination[tab];
+    const start = (page - 1) * limit;
+    const end = start + limit;
+    return items.slice(start, end);
   };
 
   const getFilteredStalls = (stalls) => {
@@ -732,12 +889,17 @@ const VendorDashboard = () => {
   };
 
   // Debug log to see if edit is enabled
-  console.log('canEditOffers in dashboard:', canEditOffers);
+  console.log('canEditItems in dashboard:', canEditItems);
   console.log('userRole:', userRole);
+  console.log('Active Offers count:', activeOffers.length);
+  console.log('Active Flash Deals count:', activeFlashDeals.length);
 
   if (loading) {
     return <LoadingSpinner message="Preparing your dashboard..." />;
   }
+
+  // Get total count for the offers tab
+  const totalOffersCount = activeOffers.length + activeFlashDeals.length;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
@@ -756,7 +918,7 @@ const VendorDashboard = () => {
         allStallsCount={allStalls.length}
         licensesCount={licenses.length}
         eventsCount={vendorEvents.length}
-        offersCount={activeOffers.length}
+        offersCount={totalOffersCount}
       />
 
       {error && (
@@ -906,16 +1068,17 @@ const VendorDashboard = () => {
           {activeTab === 'offers' && (
             <ActiveOffersTab
               activeOffers={activeOffers}
-              activeOffersLoading={activeOffersLoading}
-              activeOffersError={activeOffersError}
-              activeOffersPagination={activeOffersPagination}
-              onPageChange={handleActiveOffersPageChange}
-              onRefresh={loadActiveOffers}
-              getPaginatedOffers={getPaginatedOffers}
-              canEdit={canEditOffers}
-              onOfferUpdated={(updatedOffer) => {
-                console.log('Offer updated:', updatedOffer);
-                loadActiveOffers(); // Refresh offers after update
+              activeFlashDeals={activeFlashDeals}
+              loading={activeItemsLoading}
+              error={activeItemsError}
+              pagination={activeItemsPagination}
+              onPageChange={handleActiveItemsPageChange}
+              onRefresh={handleRefreshActiveItems}
+              getPaginatedItems={getPaginatedActiveItems}
+              canEdit={canEditItems}
+              onItemUpdated={(updatedItem, type) => {
+                console.log(`${type} updated:`, updatedItem);
+                loadActiveOffersAndFlashDeals(); // Refresh all items after update
               }}
             />
           )}

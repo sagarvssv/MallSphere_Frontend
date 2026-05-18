@@ -5,6 +5,19 @@ import OtpVerification from '../../components/auth/OtpVerification';
 import { vendorApi } from '../../hooks/vendorApi';
 import { CheckCircle } from 'lucide-react';
 
+// Helper to safely read pending verification data from localStorage
+const getPendingVerification = () => {
+  const raw = localStorage.getItem('pendingVendorVerification');
+  if (!raw) return null;
+  try {
+    return JSON.parse(raw);
+  } catch (error) {
+    console.error('Corrupted pendingVendorVerification data:', raw);
+    localStorage.removeItem('pendingVendorVerification');
+    return null;
+  }
+};
+
 const VendorOTPVerificationPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -14,6 +27,7 @@ const VendorOTPVerificationPage = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [verificationSuccess, setVerificationSuccess] = useState(false);
   const [fromLogin, setFromLogin] = useState(false);
+  const [errorMessage, setErrorMessage] = useState(''); // Optional: display error in UI
 
   useEffect(() => {
     // Get data from navigation state or localStorage
@@ -22,16 +36,13 @@ const VendorOTPVerificationPage = () => {
       setVendorLicenseNumber(location.state.vendorLicenseNumber || '');
       setFromLogin(location.state.fromLogin || false);
     } else {
-      // Try to get from localStorage
-      const savedVerification = localStorage.getItem('pendingVendorVerification');
-      if (savedVerification) {
-        const data = JSON.parse(savedVerification);
-        setEmail(data.email || '');
-        setVendorLicenseNumber(data.vendorLicenseNumber || '');
-        setFromLogin(data.fromLogin || false);
+      const pending = getPendingVerification();
+      if (pending) {
+        setEmail(pending.email || '');
+        setVendorLicenseNumber(pending.vendorLicenseNumber || '');
+        setFromLogin(pending.fromLogin || false);
       } else {
-        // No verification data found, redirect to appropriate page
-        // If fromLogin flag is set, go back to login, otherwise go to register
+        // No verification data found – redirect to appropriate page
         if (fromLogin) {
           navigate('/vendor/login');
         } else {
@@ -43,6 +54,7 @@ const VendorOTPVerificationPage = () => {
 
   const handleVerify = async (email, otp) => {
     setIsLoading(true);
+    setErrorMessage('');
     
     try {
       console.log('Verifying OTP for vendor:', { email, vendorLicenseNumber });
@@ -50,38 +62,30 @@ const VendorOTPVerificationPage = () => {
       const response = await vendorApi.verifyOtp(email, otp, vendorLicenseNumber);
       console.log('OTP verification response:', response);
       
-      // Set verification success
       setVerificationSuccess(true);
       
       // Mark as verified in pending data before removing
-      const pendingData = localStorage.getItem('pendingVendorVerification');
-      if (pendingData) {
-        const data = JSON.parse(pendingData);
-        data.verified = true;
-        data.verifiedAt = new Date().toISOString();
-        localStorage.setItem('pendingVendorVerification', JSON.stringify(data));
+      const pending = getPendingVerification();
+      if (pending) {
+        const updated = { ...pending, verified: true, verifiedAt: new Date().toISOString() };
+        localStorage.setItem('pendingVendorVerification', JSON.stringify(updated));
       }
       
-      // If API returns token on verification, store it
+      // Store tokens / user data if provided
       if (response.accessToken) {
         localStorage.setItem('vendorAccessToken', response.accessToken);
       }
-      
       if (response.user || response.vendor) {
         localStorage.setItem('vendorData', JSON.stringify(response.user || response.vendor));
       }
       
-      // Store verification timestamp
       localStorage.setItem('vendorEmailVerified', 'true');
       localStorage.setItem('vendorVerifiedEmail', email);
       localStorage.setItem('vendorVerificationTime', new Date().toISOString());
       
-      // Show success message for 2 seconds, then redirect
+      // Show success for 2 seconds, then redirect
       setTimeout(() => {
-        // Clear pending verification data after successful verification
         localStorage.removeItem('pendingVendorVerification');
-        
-        // Redirect to login with success message
         navigate('/vendor/login', {
           state: {
             message: 'Email verified successfully! You can now login to your account.',
@@ -94,32 +98,28 @@ const VendorOTPVerificationPage = () => {
       
     } catch (error) {
       console.error('OTP verification failed:', error);
-      throw error; // Pass error back to OTP component
+      setErrorMessage(error.message || 'Verification failed. Please try again.');
+      throw error; // Re-throw so OtpVerification component can show the error
     } finally {
       setIsLoading(false);
     }
   };
 
   const handleResend = async (email) => {
+    setErrorMessage('');
     try {
       console.log('Resending OTP to:', email);
-      
-      const response = await vendorApi.resendOtp(email, vendorLicenseNumber);
-      console.log('Resend OTP response:', response);
-      
-      // Show success message instead of alert for better UX
-      // You can integrate a toast notification here
+      await vendorApi.resendOtp(email, vendorLicenseNumber);
+      // Show success message (you can replace with toast)
       alert('New OTP has been sent to your email. Please check your inbox.');
-      
     } catch (error) {
       console.error('Resend OTP failed:', error);
-      alert('Failed to resend OTP. Please try again or contact support.');
+      alert(error.message || 'Failed to resend OTP. Please try again later.');
       throw error;
     }
   };
 
   const handleBack = () => {
-    // Clear pending verification data if user goes back
     if (!fromLogin) {
       localStorage.removeItem('pendingVendorVerification');
       navigate('/vendor/register');
@@ -151,13 +151,13 @@ const VendorOTPVerificationPage = () => {
             onResend={handleResend}
             onBack={handleBack}
             isLoading={isLoading}
+            errorMessage={errorMessage} // Pass down to display
             title="Verify Vendor Account"
             subtitle={fromLogin ? 
               "Please verify your email to access your vendor account. We've sent a 6-digit OTP to:" :
               "We've sent a 6-digit OTP to verify your vendor account"}
           />
           
-          {/* Additional info for login verification */}
           {fromLogin && (
             <div className="mt-6 p-4 bg-amber-50 rounded-lg border border-amber-200">
               <div className="flex">

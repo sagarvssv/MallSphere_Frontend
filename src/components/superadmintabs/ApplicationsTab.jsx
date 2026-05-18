@@ -171,35 +171,29 @@ const ApplicationsTab = () => {
     setFilteredVendors(filtered);
   }, [statusFilter, searchTerm, allVendors]);
 
-  // Handle approve vendor using superAdminAuth
   const handleApproveVendor = async (vendorId) => {
     setApprovingId(vendorId);
     setError('');
     setSuccess('');
-    
+
     try {
       console.log('✅ Approving vendor:', vendorId);
-      
       const response = await superAdminAuth.approveVendor(vendorId);
-      
       console.log('Approve response:', response);
-      
+
       if (response.success) {
-        // Update vendor status in the local state
-        setAllVendors(prev => prev.map(vendor => 
-          vendor.id === vendorId 
+        // Update local state
+        setAllVendors(prev => prev.map(vendor =>
+          vendor.id === vendorId
             ? { ...vendor, status: 'approved', updatedAt: new Date() }
             : vendor
         ));
-        
-        // Update stats
         setStats(prev => ({
           total: prev.total,
           pending: prev.pending - 1,
           approved: prev.approved + 1,
           rejected: prev.rejected
         }));
-        
         setSuccess('✅ Vendor approved successfully!');
         setTimeout(() => setSuccess(''), 3000);
       } else {
@@ -207,16 +201,40 @@ const ApplicationsTab = () => {
       }
     } catch (err) {
       console.error('Error approving vendor:', err);
-      
-      // Handle session expiration
-      if (err.message.includes('Session expired') || 
-          err.message.includes('401') || 
-          err.message.includes('Unauthorized')) {
+
+      // 1. Handle session expiry / auth errors
+      if (
+        err.message.includes('Session expired') ||
+        err.message.includes('401') ||
+        err.message.includes('Unauthorized')
+      ) {
         setError('Session expired. Redirecting to login...');
         setTimeout(() => {
           window.location.href = '/superadmin/login';
         }, 2000);
-      } else {
+      }
+      // 2. Handle 500 / Server Error – the vendor may have been approved anyway
+      else if (err.message.includes('Server Error') || err.message.includes('500')) {
+        // Refresh all vendors to get the latest status
+        try {
+          await fetchAllVendors(); // This will reload allVendors and stats
+          // Check if the vendor's status is now approved after refresh
+          // (We can't directly check the updated state, but we can trust the refresh)
+          setSuccess('Vendor may have been approved – list updated. Please verify.');
+          setTimeout(() => setSuccess(''), 5000);
+        } catch (refreshErr) {
+          setError('Approval failed and unable to refresh list. Please try again.');
+        }
+      }
+      // 3. Handle "already approved" (400)
+      else if (err.message.includes('already approved') || err.message.includes('400')) {
+        // Refresh list to reflect the already-approved status
+        await fetchAllVendors();
+        setSuccess('Vendor was already approved.');
+        setTimeout(() => setSuccess(''), 3000);
+      }
+      // 4. Any other error
+      else {
         setError(err.message || 'Failed to approve vendor');
       }
     } finally {

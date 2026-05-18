@@ -4,10 +4,12 @@ import AuthLayout from '../../components/AuthLayout';
 import FormInput from '../../components/FormInput';
 import { FaEnvelope, FaLock, FaShieldAlt, FaPaperPlane, FaEye, FaEyeSlash } from 'react-icons/fa';
 import { vendorApi } from '../../hooks/vendorApi';
+import { useAuth } from '../../context/AuthContext';
 
 const VendorLogin = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { loginVendor } = useAuth()
   const [formData, setFormData] = useState({
     email: '',
     password: ''
@@ -209,8 +211,10 @@ const VendorLogin = () => {
       // Clear any pending verification data on successful login
       localStorage.removeItem('pendingVendorVerification');
       sessionStorage.removeItem('bannerDismissed');
+
+      loginVendor(response);
       
-      navigate('/vendor/dashboard');
+      navigate('/vendor/dashboard', { replace: true });
 
     } catch (error) {
       console.error('Login error:', error);

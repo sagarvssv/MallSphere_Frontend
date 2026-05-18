@@ -31,15 +31,21 @@ const CreateEditOfferModal = ({
   const [selectedTimezone, setSelectedTimezone] = useState(form.timezone || 'Asia/Dubai');
 
   useEffect(() => {
-    if (editing) {
-      const isFlashDeal = form.isFlashDeal ||
-        !!form.flashDealTitle ||
-        form.offerCategory === 'flash' ||
-        !!form.flashDealStartTime ||
-        !!form.status;
-      setOfferType(isFlashDeal ? 'flash' : 'regular');
+    if (isOpen) {
+      if (editing) {
+        const isFlashDeal = form.isFlashDeal ||
+          !!form.flashDealTitle ||
+          form.offerCategory === 'flash' ||
+          !!form.flashDealStartTime ||
+          !!form.status;
+        setOfferType(isFlashDeal ? 'flash' : 'regular');
+      } else {
+        // ✅ Fresh open — sync with whatever parent set
+        setOfferType(form.offerCategory || 'regular');
+        setSelectedTimezone(form.timezone || 'Asia/Dubai');
+      }
     }
-  }, [editing, form]);
+  }, [isOpen, editing]);
 
   // ✅ Convert a date from one timezone to datetime-local format in another timezone
   const convertToTimezoneDateTimeLocal = (dateString, targetTimezone) => {

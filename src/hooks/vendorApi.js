@@ -1,7 +1,7 @@
 // hooks/vendorApi.js 
 
-const API_BASE_URL = 'https://mallsperebackend-uh9h.onrender.com/api';
-const AUTH_URL = `${API_BASE_URL}/auth`;
+const API_BASE_URL = 'https://mallsphere.ae/api';
+const AUTH_URL = `${API_BASE_URL}/vendor`;
 
 
 let isRefreshing = false;
@@ -31,6 +31,25 @@ const baseFetch = async (url, options = {}) => {
       ...options.headers,
     },
   });
+};
+
+// Helper: safely parse response, works for both JSON and plain text
+const safeParseResponse = async (response) => {
+  const contentType = response.headers.get('content-type');
+  if (contentType && contentType.includes('application/json')) {
+    const data = await response.json();
+    if (!response.ok) {
+      throw new Error(data?.message || data?.error || 'Request failed');
+    }
+    return data;
+  } else {
+    // Plain text response (e.g., "Too many attempts")
+    const text = await response.text();
+    if (!response.ok) {
+      throw new Error(text || 'Request failed');
+    }
+    return { message: text }; // wrap in object for consistency
+  }
 };
 
 // ==================== STANDALONE REFRESH ====================
@@ -267,24 +286,20 @@ export const vendorApi = {
     }
   },
 
-  verifyOtp: async (email, otp, vendorLicenseNumber) => {
+  verifyOtp: async (email, otp,  vendorLicenseNumber) => {
     const response = await baseFetch(`${AUTH_URL}/vendor-verify-otp`, {
       method: 'POST',
-      body: JSON.stringify({ email, otp, vendorLicenseNumber }),
+      body: JSON.stringify({ email, otp ,  vendorLicenseNumber}),
     });
-    const data = await response.json();
-    if (!response.ok) throw new Error(data?.message || data?.error || 'OTP verification failed');
-    return data;
+    return safeParseResponse(response);
   },
 
-  resendOtp: async (email, vendorLicenseNumber) => {
+  resendOtp: async (email) => {
     const response = await baseFetch(`${AUTH_URL}/vendor-resend-otp`, {
       method: 'POST',
-      body: JSON.stringify({ email, vendorLicenseNumber }),
+      body: JSON.stringify({ email}),
     });
-    const data = await response.json();
-    if (!response.ok) throw new Error(data?.message || data?.error || 'Failed to resend OTP');
-    return data;
+    return safeParseResponse(response);
   },
 
   loginVendor: async (credentials) => {
@@ -460,7 +475,101 @@ export const vendorApi = {
     apiFetch(`${AUTH_URL}/get-mall-active-offers`, { method: 'GET' }),
 
   // ── NEW OFFER MANAGEMENT METHODS ──
-  
+
+  // ── Flash Deal Management ──
+  getMallActiveFlashDeals: async () => {
+    try {
+      const response = await apiFetch(`${AUTH_URL}/get-mall-active-flash-deals`, { 
+        method: 'GET' 
+      });
+      console.log('Active flash deals response:', response);
+      return response;
+    } catch (error) {
+      console.error('Error fetching active flash deals:', error);
+      return { success: true, flashDeals: [] };
+    }
+  },
+
+  // Add this method to get ALL flash deals (including inactive/scheduled)
+  getAllFlashDeals: async () => {
+    try {
+      const response = await apiFetch(`${API_BASE_URL}/seller/get-all-flash-deals`, { 
+        method: 'GET' 
+      });
+      console.log('All flash deals response:', response);
+      return response;
+    } catch (error) {
+      console.error('Error fetching all flash deals:', error);
+      return { success: true, flashDeals: [] };
+    }
+  },
+
+  // Keep this for vendor-specific flash deals
+  getVendorFlashDeals: async () => {
+    try {
+      const response = await apiFetch(`${API_BASE_URL}/seller/get-vendor-flash-deals`, { 
+        method: 'GET' 
+      });
+      console.log('Vendor flash deals response:', response);
+      return response;
+    } catch (error) {
+      console.error('Error fetching vendor flash deals:', error);
+      return { success: true, flashDeals: [] };
+    }
+  },
+
+    editFlashDeal: async (flashDealId, flashDealData, flashDealImages = []) => {
+    if (!flashDealId) throw new Error('Flash Deal ID is required');
+    
+    const formData = new FormData();
+    
+    // Append all flash deal data
+    Object.keys(flashDealData).forEach((key) => {
+      const value = flashDealData[key];
+      if (value !== undefined && value !== null && value !== '') {
+        if (key === 'discountValue' || key === 'discountType') {
+          formData.append(key, value);
+        } else if (key === 'startDate' || key === 'endDate') {
+          formData.append(key, new Date(value).toISOString());
+        } else if (key === 'stock' || key === 'maxPerUser') {
+          formData.append(key, parseInt(value));
+        } else {
+          formData.append(key, value);
+        }
+      }
+    });
+    
+    // Append new images if any
+    if (flashDealImages?.length > 0) {
+      flashDealImages.forEach((img) => {
+        if (img) formData.append('flashDealImages', img);
+      });
+    }
+    
+    return apiFetch(`${API_BASE_URL}/seller/edit-flash-deal/${flashDealId}`, { 
+      method: 'PUT', 
+      body: formData 
+    });
+  },
+
+  deleteFlashDeal: async (flashDealId) => {
+    if (!flashDealId) throw new Error('Flash Deal ID is required');
+    
+    const response = await apiFetch(`${API_BASE_URL}/seller/delete-flash-deal/${flashDealId}`, { 
+      method: 'DELETE' 
+    });
+    
+    if (response?.success === true) {
+      return { success: true, message: 'Flash deal deleted successfully' };
+    }
+    
+    if (response?.message) {
+      throw new Error(response.message);
+    }
+    
+    throw new Error(response?.message || 'Failed to delete flash deal');
+  },
+
   getVendorOffers: async () => {
     return apiFetch(`${AUTH_URL}/get-vendor-offers`, { method: 'GET' });
   },

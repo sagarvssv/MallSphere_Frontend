@@ -3,10 +3,12 @@ import React, { useState, useEffect } from 'react';
 import { Shield, Loader2, CheckCircle, AlertCircle, Mail, Lock, User } from 'lucide-react';
 import { superAdminAuth } from '../../hooks/superAdminAuth';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';  // ✅ ADDED: Import auth context
 
 const AuthModal = ({ onAuthSuccess }) => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { loginSuperAdmin } = useAuth();  // ✅ ADDED: Get login function from auth context
   
   // Determine auth mode from URL
   const getInitialAuthMode = () => {
@@ -203,6 +205,7 @@ const AuthModal = ({ onAuthSuccess }) => {
     }
   };
 
+  // ✅ UPDATED: handleLogin function with auth context
   const handleLogin = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -227,13 +230,16 @@ const AuthModal = ({ onAuthSuccess }) => {
       console.log('Login response:', response);
 
       if (response.success) {
+        // ✅ UPDATE AUTH CONTEXT - Mark super admin as authenticated
+        loginSuperAdmin();
+        
         // Call onAuthSuccess callback if provided
         if (onAuthSuccess) {
           onAuthSuccess(response.superAdmin);
         }
         
-        // Redirect to Super Admin Dashboard
-        navigate('/superadmin/dashboard');
+        // ✅ USE REPLACE to prevent back navigation to login page
+        navigate('/superadmin/dashboard', { replace: true });
       } else {
         throw new Error(response.message || 'Login failed');
       }

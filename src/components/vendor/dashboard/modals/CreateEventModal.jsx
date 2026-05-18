@@ -9,7 +9,8 @@ const CreateEventModal = ({ isOpen, onClose, onEventCreated, actionLoading, setA
     eventDescription: '',
     eventStartDate: '',
     eventEndDate: '',
-    eventTime: '',
+    eventStartTime: '',    // changed from eventTime
+    eventEndTime: '',      // new field
     eventLocation: '',
     eventTimezone: 'Asia/Kolkata',
     guests: []
@@ -26,7 +27,8 @@ const CreateEventModal = ({ isOpen, onClose, onEventCreated, actionLoading, setA
       eventDescription: '',
       eventStartDate: '',
       eventEndDate: '',
-      eventTime: '',
+      eventStartTime: '',
+      eventEndTime: '',
       eventLocation: '',
       eventTimezone: 'Asia/Kolkata',
       guests: []
@@ -77,10 +79,12 @@ const CreateEventModal = ({ isOpen, onClose, onEventCreated, actionLoading, setA
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    // Validation
     if (!eventFormData.eventTitle) { alert('Event title is required'); return; }
-    if (!eventFormData.eventStartDate) { alert('Event start date is required'); return; }
-    if (!eventFormData.eventEndDate) { alert('Event end date is required'); return; }
-    if (!eventFormData.eventTime) { alert('Event time is required'); return; }
+    if (!eventFormData.eventStartDate) { alert('Start date is required'); return; }
+    if (!eventFormData.eventEndDate) { alert('End date is required'); return; }
+    if (!eventFormData.eventStartTime) { alert('Start time is required'); return; }
+    if (!eventFormData.eventEndTime) { alert('End time is required'); return; }
     if (!eventFormData.eventLocation) { alert('Event location is required'); return; }
     if (!eventImage) { alert('Event banner image is required'); return; }
 
@@ -93,11 +97,12 @@ const CreateEventModal = ({ isOpen, onClose, onEventCreated, actionLoading, setA
         eventTitle: eventFormData.eventTitle,
         eventSubject: eventFormData.eventSubject || '',
         eventDescription: eventFormData.eventDescription || '',
-        eventStartDate: eventFormData.eventStartDate,
+        eventStartDate: eventFormData.eventStartDate,   // YYYY-MM-DD
         eventEndDate: eventFormData.eventEndDate,
-        eventTime: eventFormData.eventTime,
+        eventStartTime: eventFormData.eventStartTime,   // 24h format, e.g., "18:00"
+        eventEndTime: eventFormData.eventEndTime,
         eventLocation: eventFormData.eventLocation,
-        eventTimezone: eventFormData.eventTimezone || 'Asia/Kolkata',
+        eventTimezone: eventFormData.eventTimezone,
         guests: validGuests,
       };
 
@@ -147,7 +152,7 @@ const CreateEventModal = ({ isOpen, onClose, onEventCreated, actionLoading, setA
                 value={eventFormData.eventTitle}
                 onChange={handleEventFormChange}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
-                placeholder="e.g., Music Festival"
+                placeholder="e.g., Summer Fashion Fest"
                 required
               />
             </div>
@@ -162,7 +167,7 @@ const CreateEventModal = ({ isOpen, onClose, onEventCreated, actionLoading, setA
                 value={eventFormData.eventSubject}
                 onChange={handleEventFormChange}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
-                placeholder="e.g., Live Concert"
+                placeholder="e.g., Fashion Show"
               />
             </div>
           </div>
@@ -214,19 +219,34 @@ const CreateEventModal = ({ isOpen, onClose, onEventCreated, actionLoading, setA
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Event Time *
+                Start Time *
               </label>
               <input
-                type="text"
-                name="eventTime"
-                value={eventFormData.eventTime}
+                type="time"
+                name="eventStartTime"
+                value={eventFormData.eventStartTime}
                 onChange={handleEventFormChange}
-                placeholder="e.g., 7:00 PM"
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
                 required
               />
             </div>
 
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                End Time *
+              </label>
+              <input
+                type="time"
+                name="eventEndTime"
+                value={eventFormData.eventEndTime}
+                onChange={handleEventFormChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
+                required
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Timezone
@@ -239,21 +259,21 @@ const CreateEventModal = ({ isOpen, onClose, onEventCreated, actionLoading, setA
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
               />
             </div>
-          </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Event Location *
-            </label>
-            <input
-              type="text"
-              name="eventLocation"
-              value={eventFormData.eventLocation}
-              onChange={handleEventFormChange}
-              placeholder="e.g., Hyderabad"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
-              required
-            />
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Event Location *
+              </label>
+              <input
+                type="text"
+                name="eventLocation"
+                value={eventFormData.eventLocation}
+                onChange={handleEventFormChange}
+                placeholder="e.g., Abu Dhabi"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
+                required
+              />
+            </div>
           </div>
 
           <div>

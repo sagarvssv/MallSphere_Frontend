@@ -11,9 +11,11 @@ import UsersTab from '../components/superadmintabs/UsersTab';
 import AnalyticsTab from '../components/superadmintabs/AnalyticsTab';
 import SettingsTab from '../components/superadmintabs/SettingsTab';
 import { superAdminAuth } from '../hooks/superAdminAuth';
+import { useAuth } from '../context/AuthContext';
 
 const SuperAdminDashboard = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const { logoutSuperAdmin } = useAuth();
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [authMode, setAuthMode] = useState('login');
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -176,22 +178,21 @@ const handleLogin = async (email, password) => {
     }
   };
 
-  // Handle logout
+  // Handle logout function
   const handleLogout = async () => {
     try {
       console.log('Logging out...');
       await superAdminAuth.logout();
     } catch (error) {
       console.error('Logout API error:', error);
-      // Continue with local logout even if API fails
     } finally {
-      // Always clear local data
-      localStorage.removeItem('superAdminAuth');
-      localStorage.removeItem('superAdminAuthenticated');
-      localStorage.removeItem('superAdminId');
-      localStorage.removeItem('superAdminData');
-      localStorage.removeItem('pendingSuperAdminEmail');
-      
+      // Clear all super admin local data
+      ['superAdminAuth', 'superAdminAuthenticated', 'superAdminId', 
+      'superAdminData', 'pendingSuperAdminEmail', 'isAuthenticated']
+        .forEach(key => localStorage.removeItem(key));
+
+      logoutSuperAdmin(); // ✅ updates superAdminAuth state in context
+
       setIsAuthenticated(false);
       setCurrentSuperAdmin(null);
       setShowAuthModal(true);
