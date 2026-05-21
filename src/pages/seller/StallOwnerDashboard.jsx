@@ -62,17 +62,17 @@ export default function StallOwnerDashboard() {
   });
 
   // ─── Auth Check ───────────────────────────────
-  // useEffect(() => {
-  //   const checkAuth = () => {
-  //     if (!sellerApi.isAuthenticated()) {
-  //       navigate('/stall-owner/login');
-  //       return;
-  //     }
-  //     setAuthChecked(true);
-  //     setInitialLoading(false);
-  //   };
-  //   checkAuth();
-  // }, [navigate]);
+  useEffect(() => {
+    const checkAuth = () => {
+      if (!sellerApi.isAuthenticated()) {
+        navigate('/stall-owner/login');
+        return;
+      }
+      setAuthChecked(true);
+      setInitialLoading(false);
+    };
+    checkAuth();
+  }, [navigate]);
 
   // ─── Fetch Initial Data ───────────────────────
   useEffect(() => {
