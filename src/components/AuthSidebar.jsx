@@ -2,11 +2,6 @@ import { Sparkles, Shield, Zap, TrendingUp, Store, Building2, CheckCircle } from
 
 const AuthSidebar = ({ userType, type = 'login' }) => {
   const loginFeatures = {
-    'user': [
-      { icon: <Sparkles className="w-5 h-5" />, text: 'Personalized recommendations' },
-      { icon: <Shield className="w-5 h-5" />, text: 'Secure account protection' },
-      { icon: <Zap className="w-5 h-5" />, text: 'Quick checkout process' }
-    ],
     'stall-owner': [
       { icon: <TrendingUp className="w-5 h-5" />, text: 'Real-time sales analytics' },
       { icon: <Store className="w-5 h-5" />, text: 'Inventory management tools' },
@@ -20,11 +15,7 @@ const AuthSidebar = ({ userType, type = 'login' }) => {
   };
 
   const registerFeatures = {
-    'user': [
-      { icon: <CheckCircle className="w-5 h-5" />, text: 'Exclusive member discounts' },
-      { icon: <Sparkles className="w-5 h-5" />, text: 'Personalized shopping feed' },
-      { icon: <Shield className="w-5 h-5" />, text: 'Secure payment options' }
-    ],
+  
     'stall-owner': [
       { icon: <CheckCircle className="w-5 h-5" />, text: 'Free business analytics' },
       { icon: <Store className="w-5 h-5" />, text: 'Easy stall setup process' },
@@ -45,7 +36,6 @@ const AuthSidebar = ({ userType, type = 'login' }) => {
 
   const getRoleColor = () => {
     switch(userType) {
-      case 'user': return 'from-blue-400 to-cyan-400';
       case 'stall-owner': return 'from-purple-400 to-pink-400';
       case 'vendor': return 'from-indigo-400 to-purple-400';
       default: return 'from-blue-400 to-cyan-400';

@@ -16,14 +16,12 @@ const AuthLayout = ({ children, type = 'login', role = 'user', backLink = '/' })
   const getSubtitle = () => {
     if (type === 'login') {
       switch(role) {
-        case 'user': return "Sign in to discover amazing products";
         case 'stall-owner': return "Access your stall management dashboard";
         case 'vendor': return "Enter your mall administration panel";
         default: return "Sign in to continue";
       }
     } else {
       switch(role) {
-        case 'user': return "Join our community of shoppers";
         case 'stall-owner': return "Register your stall and start selling";
         case 'vendor': return "Setup your mall management system";
         default: return "Create your account";
@@ -33,7 +31,6 @@ const AuthLayout = ({ children, type = 'login', role = 'user', backLink = '/' })
 
   const getRoleGradient = () => {
     switch(role) {
-      case 'user': return 'from-blue-600 to-cyan-600';
       case 'stall-owner': return 'from-purple-600 to-pink-600';
       case 'vendor': return 'from-indigo-600 to-purple-600';
       default: return 'from-blue-600 to-cyan-600';
