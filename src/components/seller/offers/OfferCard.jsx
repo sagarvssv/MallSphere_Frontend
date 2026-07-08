@@ -27,7 +27,7 @@ const OfferCard = ({ offer, onView, onToggle, onEdit, onDelete }) => {
   // Get the correct ID for different operations
   const getViewId = () => {
     // For regular offers, use offerId (the business ID)
-    if (!isFlashDeal && offer.offerId) return offer.offerId;
+    if (!isFlashDeal && offer._id) return offer._id;
     // For flash deals or fallback, use _id
     return offer._id || offer.id;
   };
