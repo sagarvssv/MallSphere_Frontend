@@ -61,6 +61,9 @@ export default function StallOwnerDashboard() {
     flash: 0
   });
 
+  // ─── Enable Modal State ───────────────────────────────
+  const [enableModal, setEnableModal] = useState(null); // { offer, startDate, endDate }
+
   // ─── Auth Check ───────────────────────────────
   useEffect(() => {
     const checkAuth = () => {
@@ -157,7 +160,7 @@ export default function StallOwnerDashboard() {
           offerTitle: deal.title,
           offerType: deal.dealType,
           offerValue: deal.dealValue,
-          _id: deal._id // ✅ Ensure _id is preserved
+          _id: deal._id
         }));
 
         const allItems = [...offersList, ...transformedFlashDeals];
@@ -248,7 +251,7 @@ export default function StallOwnerDashboard() {
     if (filter === 'flash') {
       items = allFlashDeals.map(deal => ({
         ...deal,
-        _id: deal._id, // ✅ Ensure _id is preserved
+        _id: deal._id,
         offerId: deal._id,
         offerTitle: deal.title,
         offerDescription: deal.description,
@@ -277,13 +280,13 @@ export default function StallOwnerDashboard() {
     } else {
       const regularItems = allOffers.map(offer => ({
         ...offer,
-        _id: offer._id, // ✅ Ensure _id is preserved
+        _id: offer._id,
         isFlashDeal: false
       }));
       
       const flashItems = allFlashDeals.map(deal => ({
         ...deal,
-        _id: deal._id, // ✅ Ensure _id is preserved
+        _id: deal._id,
         offerId: deal._id,
         offerTitle: deal.title,
         offerDescription: deal.description,
@@ -376,7 +379,6 @@ export default function StallOwnerDashboard() {
     try {
       const shopId = await getShopId();
 
-      // ✅ Ensure we have the MongoDB _id
       console.log('Editing offer with ID:', offer._id);
       
       setEditing(offer);
@@ -573,10 +575,9 @@ export default function StallOwnerDashboard() {
 
       // ─── UPDATE: Editing Existing Offer ──────────────────────
       if (editing) {
-        // ✅ CRITICAL FIX: Use the MongoDB _id, NOT the custom offerId
-        const offerId = editing._id; // This should be the ObjectId like "6a070e28525139eead2d0bdd"
+        const offerId = editing._id;
         
-        console.log('Updating offer with MongoDB ID:', offerId); // Debug log
+        console.log('Updating offer with MongoDB ID:', offerId);
 
         if (isFlashDeal) {
           // Update Flash Deal
@@ -739,7 +740,7 @@ export default function StallOwnerDashboard() {
     }
   };
 
-  // ─── Toggle Offer Status ──────────────────────
+  // ─── Toggle Offer Status (UPDATED with custom modal) ──────
   const toggleOfferStatus = async (offer) => {
     if (offer.isFlashDeal) {
       showToast('Flash deals cannot be disabled manually', 'info');
@@ -747,37 +748,61 @@ export default function StallOwnerDashboard() {
     }
     
     try {
-      // ✅ Use the MongoDB _id
       const id = offer._id;
       
       if (offer.isEnabled) {
+        // Disable offer - no prompt needed
         const response = await sellerApi.disableOffer(id);
         if (response.success) {
           showToast('Offer disabled successfully');
           await fetchAllData();
+        } else {
+          showToast(response.message || 'Failed to disable offer', 'error');
         }
       } else {
-        const startDate = prompt(
-          'Enter start date (YYYY-MM-DD):',
-          new Date().toISOString().split('T')[0]
-        );
-        if (!startDate) return;
-
-        const endDate = prompt(
-          'Enter end date (YYYY-MM-DD):',
-          new Date(Date.now() + 30 * 86400000).toISOString().split('T')[0]
-        );
-        if (!endDate) return;
-
-        const response = await sellerApi.enableOffer(id, startDate, endDate);
-        if (response.success) {
-          showToast('Offer enabled successfully');
-          await fetchAllData();
-        }
+        // Show enable modal instead of using prompt()
+        setEnableModal({
+          offer: offer,
+          startDate: new Date().toISOString().split('T')[0],
+          endDate: new Date(Date.now() + 30 * 86400000).toISOString().split('T')[0]
+        });
       }
     } catch (error) {
       console.error('Failed to toggle offer status:', error);
       showToast(error.message || 'Failed to update offer', 'error');
+    }
+  };
+
+  // ─── Handle Enable Offer ──────────────────────────
+  const handleEnableOffer = async () => {
+    if (!enableModal) return;
+    
+    try {
+      const { offer, startDate, endDate } = enableModal;
+      
+      // Validate dates
+      if (!startDate || !endDate) {
+        showToast('Please select both start and end dates', 'error');
+        return;
+      }
+      
+      if (new Date(endDate) <= new Date(startDate)) {
+        showToast('End date must be after start date', 'error');
+        return;
+      }
+      
+      const response = await sellerApi.enableOffer(offer.offerId, startDate, endDate);
+      
+      if (response.success) {
+        showToast('Offer enabled successfully');
+        await fetchAllData();
+        setEnableModal(null);
+      } else {
+        showToast(response.message || 'Failed to enable offer', 'error');
+      }
+    } catch (error) {
+      console.error('Failed to enable offer:', error);
+      showToast(error.message || 'Failed to enable offer', 'error');
     }
   };
 
@@ -804,7 +829,6 @@ export default function StallOwnerDashboard() {
         );
         isFlashDeal = foundItem?.isFlashDeal || !!foundItem?.flashDealTitle;
       } else {
-        // ✅ Use MongoDB _id
         id = offerOrId._id || offerOrId.offerId;
         isFlashDeal = offerOrId.isFlashDeal || !!offerOrId.flashDealTitle;
       }
@@ -985,6 +1009,67 @@ export default function StallOwnerDashboard() {
         onSubmit={handleSubmit}
         loading={loading}
       />
+
+      {/* ─── Enable Offer Modal ─────────────────────────────── */}
+      {enableModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl p-6 max-w-md w-full shadow-2xl">
+            <h2 className="text-xl font-semibold text-stone-900 mb-2">Enable Offer</h2>
+            <p className="text-stone-600 text-sm mb-4">
+              Set the start and end dates for "{enableModal.offer.offerTitle || enableModal.offer.title}"
+            </p>
+            
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-stone-700 mb-1.5">
+                  Start Date <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="date"
+                  value={enableModal.startDate}
+                  onChange={(e) => setEnableModal({
+                    ...enableModal,
+                    startDate: e.target.value
+                  })}
+                  className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-stone-900/20 focus:border-stone-900 transition-all"
+                  min={new Date().toISOString().split('T')[0]}
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-stone-700 mb-1.5">
+                  End Date <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="date"
+                  value={enableModal.endDate}
+                  onChange={(e) => setEnableModal({
+                    ...enableModal,
+                    endDate: e.target.value
+                  })}
+                  className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-stone-900/20 focus:border-stone-900 transition-all"
+                  min={enableModal.startDate || new Date().toISOString().split('T')[0]}
+                />
+              </div>
+            </div>
+            
+            <div className="flex gap-3 mt-6">
+              <button
+                onClick={() => setEnableModal(null)}
+                className="flex-1 px-4 py-2.5 border border-stone-300 rounded-lg text-stone-700 hover:bg-stone-50 transition-colors font-medium"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleEnableOffer}
+                className="flex-1 px-4 py-2.5 bg-stone-900 text-white rounded-lg hover:bg-stone-800 transition-colors font-medium"
+              >
+                Enable Offer
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <Toast toast={toast} onClose={() => setToast(null)} />
     </div>
