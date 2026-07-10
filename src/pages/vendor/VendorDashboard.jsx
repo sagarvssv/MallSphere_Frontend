@@ -269,6 +269,7 @@ const VendorDashboard = () => {
       setVendorData(vendor);
       if (vendor && Object.keys(vendor).length > 0) {
         localStorage.setItem('vendorData', JSON.stringify(vendor));
+        console.log(vendor);
       }
       console.log('Vendor profile loaded:', profile);
     } catch (error) {

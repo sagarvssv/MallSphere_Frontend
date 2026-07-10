@@ -10,7 +10,8 @@ import {
   FaFileInvoice,
   FaPlus,
   FaArrowLeft,
-  FaArrowRight
+  FaArrowRight,
+  FaCalendarAlt
 } from 'react-icons/fa';
 
 const LicensesTab = ({
@@ -161,24 +162,26 @@ const LicensesTab = ({
 
   if (licensesLoading) {
     return (
-      <div className="bg-white rounded-2xl shadow-lg p-6 text-center py-12">
-        <FaSpinner className="animate-spin h-8 w-8 text-purple-600 mx-auto mb-4" />
-        <p className="text-gray-600">Loading your licenses...</p>
+      <div className="bg-white rounded-2xl shadow-sm ring-1 ring-gray-100 text-center py-16">
+        <div className="w-14 h-14 rounded-full bg-indigo-50 flex items-center justify-center mx-auto mb-4">
+          <FaSpinner className="animate-spin h-6 w-6 text-indigo-600" />
+        </div>
+        <p className="text-gray-500 text-sm font-medium">Loading your licenses...</p>
       </div>
     );
   }
 
   if (licensesError) {
     return (
-      <div className="bg-white rounded-2xl shadow-lg p-6 text-center py-12">
-        <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
-          <FaExclamationTriangle className="h-10 w-10 text-red-500" />
+      <div className="bg-white rounded-2xl shadow-sm ring-1 ring-gray-100 text-center py-16">
+        <div className="w-20 h-20 bg-rose-50 rounded-full flex items-center justify-center mx-auto mb-6">
+          <FaExclamationTriangle className="h-8 w-8 text-rose-500" />
         </div>
-        <h3 className="text-xl font-semibold text-gray-900 mb-3">Error Loading Licenses</h3>
-        <p className="text-gray-500">{licensesError}</p>
+        <h3 className="text-lg font-bold text-gray-900 mb-2">Error Loading Licenses</h3>
+        <p className="text-gray-500 text-sm mb-6">{licensesError}</p>
         <button
           onClick={onRefresh}
-          className="mt-4 px-6 py-2 bg-red-600 text-white rounded-xl hover:bg-red-700"
+          className="px-5 py-2.5 bg-rose-600 text-white rounded-xl hover:bg-rose-700 font-medium text-sm inline-flex items-center transition-colors"
         >
           Try Again
         </button>
@@ -188,12 +191,12 @@ const LicensesTab = ({
 
   if (filteredLicenses.length === 0) {
     return (
-      <div className="bg-white rounded-2xl shadow-lg p-6 text-center py-12">
-        <div className="w-20 h-20 bg-gradient-to-br from-gray-100 to-gray-200 rounded-full flex items-center justify-center mx-auto mb-6">
-          <FaFileInvoice className="h-10 w-10 text-gray-400" />
+      <div className="bg-white rounded-2xl shadow-sm ring-1 ring-gray-100 text-center py-16">
+        <div className="w-20 h-20 bg-gradient-to-br from-indigo-50 to-indigo-100 rounded-full flex items-center justify-center mx-auto mb-6">
+          <FaFileInvoice className="h-8 w-8 text-indigo-400" />
         </div>
-        <h3 className="text-xl font-semibold text-gray-900 mb-3">No Licenses Found</h3>
-        <p className="text-gray-500">
+        <h3 className="text-lg font-bold text-gray-900 mb-2">No Licenses Found</h3>
+        <p className="text-gray-500 text-sm mb-6">
           {Object.keys(licenseFilters).length > 0 || licenseSearchTerm
             ? "No licenses match your filter criteria. Try adjusting your filters."
             : "You don't have any stall licenses yet."}
@@ -201,7 +204,7 @@ const LicensesTab = ({
         {(Object.keys(licenseFilters).length > 0 || licenseSearchTerm) && (
           <button
             onClick={clearLicenseFilters}
-            className="mt-4 px-6 py-2 bg-purple-600 text-white rounded-xl hover:bg-purple-700"
+            className="px-5 py-2.5 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 font-medium text-sm transition-colors"
           >
             Clear Filters
           </button>
@@ -211,43 +214,46 @@ const LicensesTab = ({
   }
 
   return (
-    <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
-      <div className="px-6 py-5 bg-gradient-to-r from-purple-50 to-indigo-50 border-b border-gray-200">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between">
+    <div className="bg-white rounded-2xl shadow-sm ring-1 ring-gray-100 overflow-hidden">
+      <div className="px-6 py-5 bg-gradient-to-r from-indigo-50/70 via-white to-white border-b border-gray-100">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
-            <h2 className="text-xl font-bold text-gray-900 flex items-center">
-              <FaBarcode className="mr-2 text-purple-600" />
+            <p className="text-[11px] font-semibold tracking-wider uppercase text-indigo-500 mb-1">Vendor passes</p>
+            <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2.5">
+              <span className="p-2 rounded-lg bg-indigo-100 text-indigo-600">
+                <FaBarcode className="h-4 w-4" />
+              </span>
               Your Stall Licenses
             </h2>
-            <p className="text-sm text-gray-600 mt-1">
-              Manage and track your stall licenses ({licenses.length} total)
+            <p className="text-sm text-gray-500 mt-1.5">
+              {licenses.length} {licenses.length === 1 ? 'license' : 'licenses'} to manage and track
             </p>
           </div>
           
-          <div className="mt-4 md:mt-0 flex items-center space-x-3">
+          <div className="flex flex-wrap items-center gap-3">
             <div className="relative">
-              <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+              <FaSearch className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 h-3.5 w-3.5" />
               <input
                 type="text"
                 placeholder="Search licenses..."
                 value={licenseSearchTerm}
                 onChange={(e) => setLicenseSearchTerm(e.target.value)}
-                className="pl-10 pr-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 w-64"
+                className="pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-400 w-full md:w-64 transition-all"
               />
             </div>
             
             <button
               onClick={() => setShowLicenseFilters(!showLicenseFilters)}
-              className={`px-4 py-2 border rounded-xl font-medium flex items-center ${
+              className={`px-4 py-2.5 rounded-xl font-medium text-sm flex items-center transition-colors ${
                 showLicenseFilters || Object.keys(licenseFilters).length > 0
-                  ? 'bg-purple-50 border-purple-300 text-purple-700'
-                  : 'border-gray-300 text-gray-700 hover:bg-gray-50'
+                  ? 'bg-indigo-50 ring-1 ring-indigo-300 text-indigo-700'
+                  : 'ring-1 ring-gray-200 text-gray-700 hover:bg-gray-50'
               }`}
             >
-              <FaFilter className="mr-2 h-4 w-4" />
+              <FaFilter className="mr-2 h-3.5 w-3.5" />
               Filters
               {Object.keys(licenseFilters).length > 0 && (
-                <span className="ml-2 bg-purple-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                <span className="ml-2 bg-indigo-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
                   {Object.keys(licenseFilters).length}
                 </span>
               )}
@@ -256,32 +262,32 @@ const LicensesTab = ({
             {Object.keys(licenseFilters).length > 0 && (
               <button
                 onClick={clearLicenseFilters}
-                className="px-4 py-2 text-gray-600 hover:text-gray-900 font-medium flex items-center"
+                className="px-3 py-2.5 text-gray-500 hover:text-gray-800 font-medium text-sm flex items-center transition-colors"
               >
-                <FaTimes className="mr-1 h-4 w-4" />
+                <FaTimes className="mr-1.5 h-3.5 w-3.5" />
                 Clear
               </button>
             )}
             
             <button
               onClick={onRefresh}
-              className="px-4 py-2 bg-purple-100 text-purple-700 rounded-xl hover:bg-purple-200 font-medium flex items-center"
+              className="px-4 py-2.5 bg-white text-gray-700 rounded-xl hover:bg-gray-50 ring-1 ring-gray-200 font-medium text-sm flex items-center transition-colors duration-200"
             >
-              <FaSyncAlt className="h-4 w-4 mr-2" />
+              <FaSyncAlt className="h-3.5 w-3.5 mr-2" />
               Refresh
             </button>
           </div>
         </div>
         
         {showLicenseFilters && (
-          <div className="mt-4 p-4 bg-white rounded-xl border border-gray-200">
+          <div className="mt-5 p-5 bg-gray-50/60 rounded-xl ring-1 ring-gray-100">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Status</label>
+                <label className="block text-[11px] font-semibold tracking-wide uppercase text-gray-500 mb-2">Status</label>
                 <select
                   value={licenseFilters.status || ''}
                   onChange={(e) => setLicenseFilters({...licenseFilters, status: e.target.value})}
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  className="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-400"
                 >
                   <option value="">All Statuses</option>
                   <option value="used">Used</option>
@@ -290,11 +296,11 @@ const LicensesTab = ({
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Category</label>
+                <label className="block text-[11px] font-semibold tracking-wide uppercase text-gray-500 mb-2">Category</label>
                 <select
                   value={licenseFilters.category || ''}
                   onChange={(e) => setLicenseFilters({...licenseFilters, category: e.target.value})}
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  className="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-400"
                 >
                   <option value="">All Categories</option>
                   {[...new Set(licenses.map(l => l.category))].map(category => (
@@ -304,11 +310,11 @@ const LicensesTab = ({
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Expiry Status</label>
+                <label className="block text-[11px] font-semibold tracking-wide uppercase text-gray-500 mb-2">Expiry Status</label>
                 <select
                   value={licenseFilters.expiryStatus || ''}
                   onChange={(e) => setLicenseFilters({...licenseFilters, expiryStatus: e.target.value})}
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  className="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-400"
                 >
                   <option value="">All</option>
                   <option value="valid">Valid (Not Expired)</option>
@@ -318,11 +324,11 @@ const LicensesTab = ({
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Date Range</label>
+                <label className="block text-[11px] font-semibold tracking-wide uppercase text-gray-500 mb-2">Date Range</label>
                 <select
                   value={licenseFilters.dateRange || ''}
                   onChange={(e) => setLicenseFilters({...licenseFilters, dateRange: e.target.value})}
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  className="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-400"
                 >
                   <option value="">All Dates</option>
                   <option value="thisMonth">Expires This Month</option>
@@ -334,11 +340,11 @@ const LicensesTab = ({
             
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Sort By</label>
+                <label className="block text-[11px] font-semibold tracking-wide uppercase text-gray-500 mb-2">Sort By</label>
                 <select
                   value={licenseFilters.sortBy || 'expiryAsc'}
                   onChange={(e) => setLicenseFilters({...licenseFilters, sortBy: e.target.value})}
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  className="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-400"
                 >
                   <option value="expiryAsc">Expiry Date (Earliest First)</option>
                   <option value="expiryDesc">Expiry Date (Latest First)</option>
@@ -349,25 +355,25 @@ const LicensesTab = ({
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Shop ID Search</label>
+                <label className="block text-[11px] font-semibold tracking-wide uppercase text-gray-500 mb-2">Shop ID Search</label>
                 <input
                   type="text"
                   placeholder="Search by shop ID..."
                   value={licenseFilters.shopId || ''}
                   onChange={(e) => setLicenseFilters({...licenseFilters, shopId: e.target.value})}
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  className="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-400"
                 />
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Items Per Page</label>
+                <label className="block text-[11px] font-semibold tracking-wide uppercase text-gray-500 mb-2">Items Per Page</label>
                 <select
                   value={licenseItemsPerPage}
                   onChange={(e) => {
                     setLicenseItemsPerPage(Number(e.target.value));
                     setLicenseCurrentPage(1);
                   }}
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  className="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-400"
                 >
                   <option value={6}>6 per page</option>
                   <option value={12}>12 per page</option>
@@ -381,136 +387,133 @@ const LicensesTab = ({
       </div>
       
       <div className="p-6">
-        <div className="mb-4 text-sm text-gray-600">
-          Showing {paginatedLicenses.length} of {filteredLicenses.length} licenses
+        <div className="mb-5 text-xs font-medium text-gray-500">
+          Showing <span className="text-gray-900 font-semibold">{paginatedLicenses.length}</span> of{' '}
+          <span className="text-gray-900 font-semibold">{filteredLicenses.length}</span> licenses
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {paginatedLicenses.map((license) => (
-            <div
-              key={license.licenseId}
-              className="border-2 border-gray-100 rounded-2xl p-5 hover:border-purple-200 hover:shadow-lg transition-all duration-300"
-            >
-              <div className="flex items-start justify-between mb-4">
-                <div className="flex items-center">
-                  <div className={`p-3 rounded-xl mr-4 ${
-                    license.isUsed ? 'bg-green-50 text-green-600' : 'bg-blue-50 text-blue-600'
-                  }`}>
-                    <FaBarcode className="h-6 w-6" />
-                  </div>
-                  <div>
-                    <h3 className="font-bold text-gray-900">{license.category}</h3>
-                    <p className="text-xs text-gray-500 font-mono mt-1">{license.licenseId}</p>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          {paginatedLicenses.map((license) => {
+            const isExpired = license.isUsed && license.expiresAt && new Date(license.expiresAt) < new Date();
+            const isExpiringSoon = license.isUsed && license.expiresAt &&
+              new Date(license.expiresAt) > new Date() &&
+              (new Date(license.expiresAt) - new Date()) < 30 * 24 * 60 * 60 * 1000;
+
+            return (
+              <div
+                key={license.licenseId}
+                className="group flex flex-col rounded-2xl overflow-hidden ring-1 ring-gray-100 hover:shadow-lg transition-all duration-300"
+              >
+                {/* Pass header — signature membership-card treatment */}
+                <div className="relative p-5 bg-gradient-to-r from-[#4F46E5] to-[#6D28D9] text-white overflow-hidden">
+                  <div className="pointer-events-none absolute -left-10 top-0 h-full w-16 bg-white/10 -skew-x-12" />
+                  <div className="relative flex items-start justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2.5 rounded-lg bg-white/15 backdrop-blur-sm">
+                        <FaBarcode className="h-4 w-4 text-amber-300" />
+                      </div>
+                      <div>
+                        <h3 className="font-bold text-sm leading-tight">{license.category}</h3>
+                        <p className="text-[11px] font-mono text-indigo-100 tracking-wide mt-0.5">{license.licenseId}</p>
+                      </div>
+                    </div>
+                    <span className={`relative px-2.5 py-1 rounded-full text-[11px] font-semibold shrink-0 ${
+                      license.isUsed
+                        ? 'bg-white/15 text-indigo-50 ring-1 ring-white/30'
+                        : 'bg-amber-300 text-indigo-950'
+                    }`}>
+                      {license.isUsed ? 'Used' : 'Available'}
+                    </span>
                   </div>
                 </div>
-                <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                  license.isUsed 
-                    ? 'bg-green-100 text-green-800' 
-                    : 'bg-blue-100 text-blue-800'
-                }`}>
-                  {license.isUsed ? 'Used' : 'Available'}
-                </span>
-              </div>
-              
-              <div className="space-y-3">
-                {/* EXPIRES ON */}
-              <div>
-              <p className="text-xs text-gray-500">Expires On</p>
-              <p className="font-medium text-gray-900">
-                    {license.isUsed && license.expiresAt
-                      ? new Date(license.expiresAt).toLocaleDateString('en-US', {
-                          year: 'numeric',
-                          month: 'long',
-                          day: 'numeric'
-                        })
-                      : "Not Used"}
-              </p>
-              </div>
-              
-                {/* USED INFO */}
-                {license.isUsed && (
-              <>
-              <div>
-              <p className="text-xs text-gray-500">Used On</p>
-              <p className="font-medium text-gray-900">
-                        {new Date(license.usedAt).toLocaleDateString('en-US', {
-                          year: 'numeric',
-                          month: 'long',
-                          day: 'numeric'
-                        })}
-              </p>
-              </div>
-              
-                    <div>
-              <p className="text-xs text-gray-500">Used For Shop</p>
-              <p className="font-medium text-indigo-600 font-mono">
-                        {license.usedForShopId}
-              </p>
-              </div>
-              </>
-                )}
-              
-                {/* ❌ EXPIRED (FIXED) */}
-                {license.isUsed &&
-                  license.expiresAt &&
-                  new Date(license.expiresAt) < new Date() && (
-              <div className="mt-3 p-2 bg-red-50 rounded-lg">
-              <p className="text-xs text-red-600 flex items-center">
-              <FaExclamationTriangle className="mr-1" />
-                        License Expired
-              </p>
-              </div>
-                )}
-              
-                {/* ⚠️ EXPIRING SOON (FIXED) */}
-                {license.isUsed &&
-                  license.expiresAt &&
-                  new Date(license.expiresAt) > new Date() &&
-                  (new Date(license.expiresAt) - new Date()) < 30 * 24 * 60 * 60 * 1000 && (
-              <div className="mt-3 p-2 bg-yellow-50 rounded-lg">
-              <p className="text-xs text-yellow-600 flex items-center">
-              <FaExclamationTriangle className="mr-1" />
-                        Expiring soon
-              </p>
-              </div>
-                )}
-              
-              </div>
-              
-              {!license.isUsed && (
-                <div className="mt-4 pt-4 border-t border-gray-100">
-                  <button
-                    className="w-full px-4 py-2 bg-purple-600 text-white rounded-xl hover:bg-purple-700 font-medium text-sm flex items-center justify-center"
-                    onClick={() => onAssignLicense(license)}
-                  >
-                    <FaPlus className="mr-2 h-3 w-3" />
-                    Assign to Stall
-                  </button>
+
+                {/* Details body */}
+                <div className="flex-1 flex flex-col p-5 bg-white">
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[11px] font-semibold tracking-wide uppercase text-gray-400">Expires On</span>
+                      <span className="text-sm font-medium text-gray-900 flex items-center gap-1.5">
+                        <FaCalendarAlt className="h-3 w-3 text-gray-400" />
+                        {license.isUsed && license.expiresAt
+                          ? new Date(license.expiresAt).toLocaleDateString('en-US', {
+                              year: 'numeric', month: 'short', day: 'numeric'
+                            })
+                          : 'Not Used'}
+                      </span>
+                    </div>
+
+                    {license.isUsed && (
+                      <>
+                        <div className="flex items-center justify-between">
+                          <span className="text-[11px] font-semibold tracking-wide uppercase text-gray-400">Used On</span>
+                          <span className="text-sm font-medium text-gray-900">
+                            {new Date(license.usedAt).toLocaleDateString('en-US', {
+                              year: 'numeric', month: 'short', day: 'numeric'
+                            })}
+                          </span>
+                        </div>
+
+                        <div className="flex items-center justify-between">
+                          <span className="text-[11px] font-semibold tracking-wide uppercase text-gray-400">Used For Shop</span>
+                          <span className="text-sm font-semibold text-indigo-600 font-mono">
+                            {license.usedForShopId}
+                          </span>
+                        </div>
+                      </>
+                    )}
+
+                    {isExpired && (
+                      <div className="flex items-center gap-2 p-2.5 bg-rose-50 rounded-lg ring-1 ring-rose-100">
+                        <FaExclamationTriangle className="h-3 w-3 text-rose-500 shrink-0" />
+                        <p className="text-xs font-semibold text-rose-600">License Expired</p>
+                      </div>
+                    )}
+
+                    {isExpiringSoon && (
+                      <div className="flex items-center gap-2 p-2.5 bg-amber-50 rounded-lg ring-1 ring-amber-100">
+                        <FaExclamationTriangle className="h-3 w-3 text-amber-500 shrink-0" />
+                        <p className="text-xs font-semibold text-amber-600">Expiring soon</p>
+                      </div>
+                    )}
+                  </div>
+
+                  {!license.isUsed && (
+                    <div className="mt-4 pt-4 border-t border-gray-100">
+                      <button
+                        onClick={() => onAssignLicense(license)}
+                        className="w-full px-4 py-2.5 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 font-medium text-sm flex items-center justify-center transition-colors shadow-sm shadow-indigo-600/20"
+                      >
+                        <FaPlus className="mr-2 h-3 w-3" />
+                        Assign to Stall
+                      </button>
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
-          ))}
+              </div>
+            );
+          })}
         </div>
 
         {licenseTotalPages > 1 && (
-          <div className="flex items-center justify-between mt-6 pt-4 border-t border-gray-200">
-            <div className="text-sm text-gray-500">
-              Showing page {licenseCurrentPage} of {licenseTotalPages}
+          <div className="flex items-center justify-between mt-6 pt-5 border-t border-gray-100">
+            <div className="text-xs font-medium text-gray-500">
+              Page <span className="text-gray-900 font-semibold">{licenseCurrentPage}</span> of{' '}
+              <span className="text-gray-900 font-semibold">{licenseTotalPages}</span>
             </div>
-            <div className="flex space-x-2">
+            <div className="flex gap-2">
               <button
                 onClick={() => setLicenseCurrentPage(prev => Math.max(prev - 1, 1))}
                 disabled={licenseCurrentPage === 1}
-                className="px-4 py-2 border border-gray-300 rounded-xl hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="p-2.5 ring-1 ring-gray-200 rounded-xl hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
               >
-                <FaArrowLeft className="h-4 w-4" />
+                <FaArrowLeft className="h-3.5 w-3.5 text-gray-600" />
               </button>
               <button
                 onClick={() => setLicenseCurrentPage(prev => Math.min(prev + 1, licenseTotalPages))}
                 disabled={licenseCurrentPage === licenseTotalPages}
-                className="px-4 py-2 border border-gray-300 rounded-xl hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="p-2.5 ring-1 ring-gray-200 rounded-xl hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
               >
-                <FaArrowRight className="h-4 w-4" />
+                <FaArrowRight className="h-3.5 w-3.5 text-gray-600" />
               </button>
             </div>
           </div>

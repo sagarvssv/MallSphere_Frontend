@@ -130,9 +130,9 @@ const ActiveOffersTab = ({
   const getOfferTypeBadge = (type) => {
     switch(type) {
       case 'percentage':
-        return <span className="inline-block px-2 py-1 bg-purple-100 text-purple-800 rounded-full text-xs font-medium">Percentage</span>;
+        return <span className="inline-block px-2 py-1 bg-indigo-50 text-indigo-700 ring-1 ring-indigo-200 rounded-full text-xs font-semibold">Percentage</span>;
       case 'flat':
-        return <span className="inline-block px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-medium">Flat Discount</span>;
+        return <span className="inline-block px-2 py-1 bg-blue-50 text-blue-700 ring-1 ring-blue-200 rounded-full text-xs font-semibold">Flat Discount</span>;
       default:
         return null;
     }
@@ -165,24 +165,26 @@ const ActiveOffersTab = ({
 
   if (loading) {
     return (
-      <div className="bg-white rounded-2xl shadow-lg p-6 text-center py-12">
-        <FaSpinner className="animate-spin h-8 w-8 text-green-600 mx-auto mb-4" />
-        <p className="text-gray-600">Loading active items...</p>
+      <div className="bg-white rounded-2xl shadow-sm ring-1 ring-gray-100 text-center py-16">
+        <div className="w-14 h-14 rounded-full bg-indigo-50 flex items-center justify-center mx-auto mb-4">
+          <FaSpinner className="animate-spin h-6 w-6 text-indigo-600" />
+        </div>
+        <p className="text-gray-500 text-sm font-medium">Loading active items...</p>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="bg-white rounded-2xl shadow-lg p-6 text-center py-12">
-        <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
-          <FaExclamationTriangle className="h-10 w-10 text-red-500" />
+      <div className="bg-white rounded-2xl shadow-sm ring-1 ring-gray-100 text-center py-16">
+        <div className="w-20 h-20 bg-rose-50 rounded-full flex items-center justify-center mx-auto mb-6">
+          <FaExclamationTriangle className="h-8 w-8 text-rose-500" />
         </div>
-        <h3 className="text-xl font-semibold text-gray-900 mb-3">Error Loading Items</h3>
-        <p className="text-gray-500">{error}</p>
+        <h3 className="text-lg font-bold text-gray-900 mb-2">Error Loading Items</h3>
+        <p className="text-gray-500 text-sm mb-6">{error}</p>
         <button
           onClick={onRefresh}
-          className="mt-4 px-6 py-2 bg-green-600 text-white rounded-xl hover:bg-green-700"
+          className="px-5 py-2.5 bg-rose-600 text-white rounded-xl hover:bg-rose-700 font-medium text-sm transition-colors"
         >
           Try Again
         </button>
@@ -196,27 +198,57 @@ const ActiveOffersTab = ({
   if (hasNoItems) {
     const isOffersEmpty = activeTab === 'offers' && activeOffers.length === 0;
     return (
-      <div className="bg-white rounded-2xl shadow-lg p-6 text-center py-12">
-        <div className="w-20 h-20 bg-gradient-to-br from-gray-100 to-gray-200 rounded-full flex items-center justify-center mx-auto mb-6">
-          {isOffersEmpty ? 
-            <FaTags className="h-10 w-10 text-gray-400" /> : 
-            <FaBolt className="h-10 w-10 text-gray-400" />
-          }
+      <div className="bg-white rounded-2xl shadow-sm ring-1 ring-gray-100 overflow-hidden">
+        {/* Tab Navigation persists even when a sub-tab is empty */}
+        <div className="border-b border-gray-100">
+          <nav className="flex">
+            <button
+              onClick={() => setActiveTab('offers')}
+              className={`flex-1 sm:flex-none py-4 px-6 text-center border-b-2 font-semibold text-sm transition-colors ${
+                activeTab === 'offers'
+                  ? 'border-indigo-600 text-indigo-600'
+                  : 'border-transparent text-gray-400 hover:text-gray-600'
+              }`}
+            >
+              <FaTags className="inline mr-2 h-3.5 w-3.5" />
+              Offers ({activeOffers.length})
+            </button>
+            <button
+              onClick={() => setActiveTab('flashdeals')}
+              className={`flex-1 sm:flex-none py-4 px-6 text-center border-b-2 font-semibold text-sm transition-colors ${
+                activeTab === 'flashdeals'
+                  ? 'border-amber-500 text-amber-600'
+                  : 'border-transparent text-gray-400 hover:text-gray-600'
+              }`}
+            >
+              <FaBolt className="inline mr-2 h-3.5 w-3.5" />
+              Flash Deals ({activeFlashDeals.length})
+            </button>
+          </nav>
         </div>
-        <h3 className="text-xl font-semibold text-gray-900 mb-3">
-          {isOffersEmpty ? 'No Active Offers' : 'No Active Flash Deals'}
-        </h3>
-        <p className="text-gray-500">
-          {isOffersEmpty 
-            ? 'There are no active offers in the mall at the moment.' 
-            : 'There are no active flash deals at the moment.'}
-        </p>
+        <div className="text-center py-16">
+          <div className="w-20 h-20 bg-gradient-to-br from-gray-50 to-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
+            {isOffersEmpty ? 
+              <FaTags className="h-8 w-8 text-gray-400" /> : 
+              <FaBolt className="h-8 w-8 text-gray-400" />
+            }
+          </div>
+          <h3 className="text-lg font-bold text-gray-900 mb-2">
+            {isOffersEmpty ? 'No Active Offers' : 'No Active Flash Deals'}
+          </h3>
+          <p className="text-gray-500 text-sm">
+            {isOffersEmpty 
+              ? 'There are no active offers in the mall at the moment.' 
+              : 'There are no active flash deals at the moment.'}
+          </p>
+        </div>
       </div>
     );
   }
 
   const currentItems = getCurrentItems();
   const currentPagination = getCurrentPagination();
+  const isFlashTab = activeTab === 'flashdeals';
 
   // Pagination helper functions
   const goToFirstPage = () => {
@@ -290,90 +322,95 @@ const ActiveOffersTab = ({
 
   return (
     <>
-      <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
+      <div className="bg-white rounded-2xl shadow-sm ring-1 ring-gray-100 overflow-hidden">
         {/* Tab Navigation */}
-        <div className="border-b border-gray-200">
-          <nav className="flex -mb-px">
+        <div className="border-b border-gray-100">
+          <nav className="flex">
             <button
               onClick={() => setActiveTab('offers')}
-              className={`py-4 px-6 text-center border-b-2 font-medium text-sm transition-colors ${
+              className={`flex-1 sm:flex-none py-4 px-6 text-center border-b-2 font-semibold text-sm transition-colors ${
                 activeTab === 'offers'
-                  ? 'border-green-500 text-green-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  ? 'border-indigo-600 text-indigo-600'
+                  : 'border-transparent text-gray-400 hover:text-gray-600'
               }`}
             >
-              <FaTags className="inline mr-2" />
+              <FaTags className="inline mr-2 h-3.5 w-3.5" />
               Offers ({activeOffers.length})
             </button>
             <button
               onClick={() => setActiveTab('flashdeals')}
-              className={`py-4 px-6 text-center border-b-2 font-medium text-sm transition-colors ${
+              className={`flex-1 sm:flex-none py-4 px-6 text-center border-b-2 font-semibold text-sm transition-colors ${
                 activeTab === 'flashdeals'
-                  ? 'border-green-500 text-green-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  ? 'border-amber-500 text-amber-600'
+                  : 'border-transparent text-gray-400 hover:text-gray-600'
               }`}
             >
-              <FaBolt className="inline mr-2" />
+              <FaBolt className="inline mr-2 h-3.5 w-3.5" />
               Flash Deals ({activeFlashDeals.length})
             </button>
           </nav>
         </div>
 
-        <div className="px-6 py-5 bg-gradient-to-r from-green-50 to-emerald-50 border-b border-gray-200">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between">
+        <div className={`px-6 py-5 border-b border-gray-100 bg-gradient-to-r ${
+          isFlashTab ? 'from-amber-50/70 via-white to-white' : 'from-indigo-50/70 via-white to-white'
+        }`}>
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
-              <h2 className="text-xl font-bold text-gray-900 flex items-center">
-                {activeTab === 'offers' ? (
-                  <FaTags className="mr-2 text-green-600" />
-                ) : (
-                  <FaBolt className="mr-2 text-yellow-600" />
-                )}
-                Mall Active {activeTab === 'offers' ? 'Offers' : 'Flash Deals'}
-              </h2>
-              <p className="text-sm text-gray-600 mt-1">
-                Current active {activeTab === 'offers' ? 'offers' : 'flash deals'} in the mall ({getTotalCount()} total)
+              <p className={`text-[11px] font-semibold tracking-wider uppercase mb-1 ${isFlashTab ? 'text-amber-500' : 'text-indigo-500'}`}>
+                {isFlashTab ? 'Ending soon, act fast' : 'Currently running'}
               </p>
-              <p className="text-xs text-green-600 mt-1">
-                Showing {getStartIndex()} to {getEndIndex()} of {getTotalCount()} {activeTab === 'offers' ? 'offers' : 'flash deals'}
+              <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2.5">
+                <span className={`p-2 rounded-lg ${isFlashTab ? 'bg-amber-100 text-amber-600' : 'bg-indigo-100 text-indigo-600'}`}>
+                  {isFlashTab ? <FaBolt className="h-4 w-4" /> : <FaTags className="h-4 w-4" />}
+                </span>
+                Mall Active {isFlashTab ? 'Flash Deals' : 'Offers'}
+              </h2>
+              <p className="text-sm text-gray-500 mt-1.5">
+                Showing {getStartIndex()}–{getEndIndex()} of {getTotalCount()} {isFlashTab ? 'flash deals' : 'offers'}
               </p>
             </div>
             
-            <div className="mt-4 md:mt-0 flex space-x-3">
-              <button
-                onClick={onRefresh}
-                className="px-4 py-2 bg-green-100 text-green-700 rounded-xl hover:bg-green-200 font-medium flex items-center"
-              >
-                <FaSyncAlt className="mr-2 h-4 w-4" />
-                Refresh
-              </button>
-            </div>
+            <button
+              onClick={onRefresh}
+              className="px-4 py-2.5 bg-white text-gray-700 rounded-xl hover:bg-gray-50 ring-1 ring-gray-200 font-medium text-sm flex items-center whitespace-nowrap transition-colors self-start md:self-auto"
+            >
+              <FaSyncAlt className="mr-2 h-3.5 w-3.5" />
+              Refresh
+            </button>
           </div>
         </div>
         
         <div className="p-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
             {currentItems.map((item) => {
               const isOffer = activeTab === 'offers';
-              const itemData = isOffer ? item : item;
+              const itemData = item;
+              const isExpiredFlash = !isOffer && new Date(itemData.endDate) <= new Date();
               
               return (
                 <div 
                   key={itemData._id || itemData.offerId || itemData.flashDealId} 
-                  className="border-2 border-gray-100 rounded-2xl p-5 hover:border-green-200 hover:shadow-lg transition-all duration-300 relative"
+                  className={`group border rounded-2xl p-5 hover:shadow-md transition-all duration-300 relative ${
+                    isOffer
+                      ? 'border-gray-100 hover:border-indigo-200'
+                      : isExpiredFlash
+                        ? 'border-gray-100'
+                        : 'border-amber-100 hover:border-amber-300 bg-gradient-to-b from-amber-50/30 to-white'
+                  }`}
                 >
                   {/* Edit/Delete Actions */}
                   {canEdit && (
-                    <div className="absolute top-3 right-3 flex space-x-2">
+                    <div className="absolute top-3 right-3 flex gap-1.5 z-10">
                       <button
                         onClick={() => isOffer ? handleEditOfferClick(itemData) : handleEditFlashDealClick(itemData)}
-                        className="p-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors"
+                        className="p-2 bg-white text-indigo-600 rounded-lg ring-1 ring-gray-200 hover:bg-indigo-50 hover:ring-indigo-200 transition-colors shadow-sm"
                         title={`Edit ${isOffer ? 'Offer' : 'Flash Deal'}`}
                       >
                         <FaEdit className="h-3 w-3" />
                       </button>
                       <button
                         onClick={() => handleDeleteClick(itemData, isOffer ? 'offer' : 'flashdeal')}
-                        className="p-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-colors"
+                        className="p-2 bg-white text-rose-600 rounded-lg ring-1 ring-gray-200 hover:bg-rose-50 hover:ring-rose-200 transition-colors shadow-sm"
                         title={`Delete ${isOffer ? 'Offer' : 'Flash Deal'}`}
                       >
                         <FaTimes className="h-3 w-3" />
@@ -383,9 +420,9 @@ const ActiveOffersTab = ({
                   
                   {/* Flash Deal Badge */}
                   {!isOffer && (
-                    <div className="absolute top-3 left-3">
-                      <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-                        <FaBolt className="mr-1 h-3 w-3" />
+                    <div className="absolute top-3 left-3 z-10">
+                      <span className="inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-bold bg-amber-400 text-amber-950 shadow-sm">
+                        <FaBolt className="mr-1 h-2.5 w-2.5" />
                         Flash Deal
                       </span>
                     </div>
@@ -394,22 +431,22 @@ const ActiveOffersTab = ({
                   {/* Images Carousel */}
                   {(isOffer ? itemData.offerImages : itemData.banners) && 
                    (isOffer ? itemData.offerImages?.length > 0 : itemData.banners?.length > 0) && (
-                    <div className="mb-3 -mt-2 -mx-2">
+                    <div className={`mb-3 -mt-2 -mx-2 ${!isOffer ? 'pt-6' : ''}`}>
                       <div className="flex overflow-x-auto space-x-2 pb-2">
                         {(isOffer ? itemData.offerImages : itemData.banners).slice(0, 3).map((img, idx) => (
                           <img
                             key={idx}
                             src={img.url}
                             alt={`Item ${idx + 1}`}
-                            className="w-16 h-16 object-cover rounded-lg flex-shrink-0"
+                            className="w-16 h-16 object-cover rounded-lg flex-shrink-0 ring-1 ring-gray-100"
                             onError={(e) => {
                               e.target.src = 'https://via.placeholder.com/80?text=No+Image';
                             }}
                           />
                         ))}
                         {(isOffer ? itemData.offerImages : itemData.banners).length > 3 && (
-                          <div className="w-16 h-16 bg-gray-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                            <span className="text-xs text-gray-500">
+                          <div className="w-16 h-16 bg-gray-50 rounded-lg flex items-center justify-center flex-shrink-0 ring-1 ring-gray-100">
+                            <span className="text-xs font-semibold text-gray-500">
                               +{(isOffer ? itemData.offerImages : itemData.banners).length - 3}
                             </span>
                           </div>
@@ -417,36 +454,20 @@ const ActiveOffersTab = ({
                       </div>
                     </div>
                   )}
-                  
-                  {/* <div className="flex items-center mb-3">
-                    <div className="p-2 rounded-xl bg-green-50 text-green-600 mr-3">
-                      <FaStore className="h-4 w-4" />
-                    </div>
-                    <div>
-                      <h3 className="font-bold text-gray-900">{itemData.stallName || 'Unknown Stall'}</h3>
-                      <p className="text-xs text-gray-500">{itemData.shopId}</p>
-                    </div>
-                  </div>
-                  
-                  <div className="mb-3">
-                    <span className="inline-block px-2 py-1 bg-gray-100 rounded-lg text-xs font-mono text-gray-600">
-                      {isOffer ? itemData.offerId : itemData.flashDealId}
-                    </span>
-                  </div> */}
-                  
+
                   {/* Item Title */}
                   {(isOffer ? itemData.offerTitle : itemData.title) && (
-                    <h4 className="font-semibold text-gray-800 mb-2 line-clamp-1">
+                    <h4 className={`font-bold text-gray-900 mb-2.5 line-clamp-1 ${!isOffer ? 'mt-1' : ''}`}>
                       {isOffer ? itemData.offerTitle : itemData.title}
                     </h4>
                   )}
                   
-                  <div className="space-y-2">
+                  <div className="space-y-2.5">
                     {/* Discount Value */}
                     {(isOffer ? (itemData.offerValue || itemData.discount) : (itemData.discountValue || itemData.discount)) && (
-                      <div className="flex items-center text-sm">
-                        <FaPercent className="h-4 w-4 text-green-600 mr-2" />
-                        <span className="text-gray-700 font-medium">
+                      <div className="flex items-center gap-2 text-sm flex-wrap">
+                        <FaPercent className={`h-3.5 w-3.5 ${isOffer ? 'text-indigo-500' : 'text-amber-500'}`} />
+                        <span className="text-gray-800 font-semibold">
                           {isOffer 
                             ? (itemData.offerValue 
                                 ? getOfferValueDisplay(itemData.offerType, itemData.offerValue)
@@ -468,14 +489,14 @@ const ActiveOffersTab = ({
                     {!isOffer && (
                       <>
                         {itemData.stock !== undefined && (
-                          <div className="flex items-center text-sm">
-                            <FaBox className="h-4 w-4 text-blue-600 mr-2" />
-                            <span className="text-gray-600">Stock: {itemData.stock}</span>
+                          <div className="flex items-center text-sm gap-2">
+                            <FaBox className="h-3.5 w-3.5 text-gray-400" />
+                            <span className="text-gray-600">Stock: <span className="font-semibold text-gray-800">{itemData.stock}</span></span>
                           </div>
                         )}
                         {itemData.maxPerUser && (
-                          <div className="flex items-center text-sm">
-                            <FaUsers className="h-4 w-4 text-purple-600 mr-2" />
+                          <div className="flex items-center text-sm gap-2">
+                            <FaUsers className="h-3.5 w-3.5 text-gray-400" />
                             <span className="text-gray-600">Max {itemData.maxPerUser} per user</span>
                           </div>
                         )}
@@ -484,16 +505,16 @@ const ActiveOffersTab = ({
                     
                     {/* Min Purchase */}
                     {itemData.minPurchase && (
-                      <div className="flex items-center text-sm">
-                        <FaShoppingCart className="h-4 w-4 text-purple-600 mr-2" />
+                      <div className="flex items-center text-sm gap-2">
+                        <FaShoppingCart className="h-3.5 w-3.5 text-gray-400" />
                         <span className="text-gray-600">Min. Purchase: AED {itemData.minPurchase}</span>
                       </div>
                     )}
                     
                     {/* Max Discount */}
                     {itemData.maxDiscount && (
-                      <div className="flex items-center text-sm">
-                        <FaMoneyBillWave className="h-4 w-4 text-yellow-600 mr-2" />
+                      <div className="flex items-center text-sm gap-2">
+                        <FaMoneyBillWave className="h-3.5 w-3.5 text-gray-400" />
                         <span className="text-gray-600">Max Discount: AED {itemData.maxDiscount}</span>
                       </div>
                     )}
@@ -502,35 +523,37 @@ const ActiveOffersTab = ({
                     {(isOffer 
                       ? (itemData.offerStartDate && itemData.offerEndDate)
                       : (itemData.startDate && itemData.endDate)) && (
-                      <div className="flex items-center text-sm">
-                        <FaRegClock className="h-4 w-4 text-orange-600 mr-2" />
+                      <div className="flex items-center text-sm gap-2">
+                        <FaRegClock className="h-3.5 w-3.5 text-gray-400" />
                         <span className="text-gray-600">
-                          {new Date(isOffer ? itemData.offerStartDate : itemData.startDate).toLocaleDateString()} - {new Date(isOffer ? itemData.offerEndDate : itemData.endDate).toLocaleDateString()}
+                          {new Date(isOffer ? itemData.offerStartDate : itemData.startDate).toLocaleDateString()} – {new Date(isOffer ? itemData.offerEndDate : itemData.endDate).toLocaleDateString()}
                         </span>
                       </div>
                     )}
                     
-                    {/* Time remaining for flash deals */}
+                    {/* Time remaining for flash deals — the signature element */}
                     {!isOffer && itemData.endDate && (
-                      <div className="flex items-center text-sm">
-                        <FaClock className="h-4 w-4 text-red-600 mr-2" />
-                        <span className={`font-medium ${new Date(itemData.endDate) < new Date() ? 'text-red-600' : 'text-orange-600'}`}>
-                          {getTimeRemaining(itemData.endDate)}
-                        </span>
+                      <div className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-bold ${
+                        isExpiredFlash
+                          ? 'bg-gray-50 text-gray-500'
+                          : 'bg-rose-50 text-rose-600 ring-1 ring-rose-100'
+                      }`}>
+                        <FaClock className="h-3.5 w-3.5" />
+                        {getTimeRemaining(itemData.endDate)}
                       </div>
                     )}
                     
                     {/* Description */}
                     {(isOffer ? (itemData.offerDescription || itemData.description) : (itemData.description)) && (
-                      <p className="text-sm text-gray-600 mt-2 line-clamp-2">
+                      <p className="text-sm text-gray-500 line-clamp-2">
                         {isOffer ? (itemData.offerDescription || itemData.description) : itemData.description}
                       </p>
                     )}
                     
                     {/* Terms & Conditions */}
                     {(isOffer ? (itemData.offerTermsAndConditions || itemData.terms) : (itemData.termsAndConditions)) && (
-                      <div className="mt-2">
-                        <p className="text-xs text-gray-500 font-medium">Terms & Conditions:</p>
+                      <div className="pt-1">
+                        <p className="text-[11px] font-semibold tracking-wide uppercase text-gray-400 mb-0.5">Terms & Conditions</p>
                         <p className="text-xs text-gray-500 line-clamp-2">
                           {isOffer ? (itemData.offerTermsAndConditions || itemData.terms) : itemData.termsAndConditions}
                         </p>
@@ -538,14 +561,19 @@ const ActiveOffersTab = ({
                     )}
                   </div>
                   
-                  <div className="mt-3 flex items-center justify-between">
-                    <span className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${
+                  <div className="mt-4 pt-4 border-t border-gray-100 flex items-center justify-between">
+                    <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold ${
                       isOffer
-                        ? (itemData.status === 'active' ? 'bg-green-100 text-green-800' :
-                           itemData.status === 'scheduled' ? 'bg-blue-100 text-blue-800' :
-                           'bg-gray-100 text-gray-800')
-                        : (new Date(itemData.endDate) > new Date() ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800')
+                        ? (itemData.status === 'active' ? 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200' :
+                           itemData.status === 'scheduled' ? 'bg-blue-50 text-blue-700 ring-1 ring-blue-200' :
+                           'bg-gray-100 text-gray-600')
+                        : (new Date(itemData.endDate) > new Date() ? 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200' : 'bg-gray-100 text-gray-500')
                     }`}>
+                      <span className={`h-1.5 w-1.5 rounded-full ${
+                        isOffer
+                          ? (itemData.status === 'active' ? 'bg-emerald-500' : itemData.status === 'scheduled' ? 'bg-blue-500' : 'bg-gray-400')
+                          : (new Date(itemData.endDate) > new Date() ? 'bg-emerald-500' : 'bg-gray-400')
+                      }`} />
                       {isOffer 
                         ? (itemData.status === 'active' ? 'Active' : 
                            itemData.status === 'scheduled' ? 'Scheduled' : 
@@ -554,7 +582,7 @@ const ActiveOffersTab = ({
                     </span>
                     
                     {!isOffer && itemData.stock !== undefined && itemData.stock <= 10 && itemData.stock > 0 && (
-                      <span className="text-xs text-red-600 font-medium">
+                      <span className="text-xs text-rose-600 font-bold">
                         Only {itemData.stock} left!
                       </span>
                     )}
@@ -566,44 +594,45 @@ const ActiveOffersTab = ({
 
           {/* Enhanced Pagination */}
           {currentPagination.totalPages > 1 && (
-            <div className="flex flex-col sm:flex-row items-center justify-between mt-6 pt-4 border-t border-gray-200 gap-4">
-              <div className="text-sm text-gray-500">
-                Page {currentPagination.page} of {currentPagination.totalPages}
+            <div className="flex flex-col sm:flex-row items-center justify-between mt-6 pt-5 border-t border-gray-100 gap-4">
+              <div className="text-xs font-medium text-gray-500">
+                Page <span className="text-gray-900 font-semibold">{currentPagination.page}</span> of{' '}
+                <span className="text-gray-900 font-semibold">{currentPagination.totalPages}</span>
               </div>
               
-              <div className="flex items-center space-x-2">
+              <div className="flex items-center gap-1.5">
                 <button
                   onClick={goToFirstPage}
                   disabled={currentPagination.page === 1}
-                  className="p-2 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="p-2.5 ring-1 ring-gray-200 rounded-xl hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                   title="First Page"
                 >
-                  <FaFastBackward className="h-4 w-4" />
+                  <FaFastBackward className="h-3.5 w-3.5 text-gray-600" />
                 </button>
                 
                 <button
                   onClick={goToPreviousPage}
                   disabled={currentPagination.page === 1}
-                  className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+                  className="px-3.5 py-2.5 ring-1 ring-gray-200 rounded-xl hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed flex items-center text-sm font-medium text-gray-600 transition-colors"
                 >
-                  <FaArrowLeft className="h-4 w-4 mr-1" />
-                  Previous
+                  <FaArrowLeft className="h-3 w-3 mr-1.5" />
+                  Prev
                 </button>
                 
-                <div className="flex space-x-1">
+                <div className="flex gap-1">
                   {getPageNumbers().map((pageNum, index) => (
                     pageNum === '...' ? (
-                      <span key={`dots-${index}`} className="px-3 py-2 text-gray-500">
+                      <span key={`dots-${index}`} className="px-2 py-2 text-gray-400 text-sm">
                         ...
                       </span>
                     ) : (
                       <button
                         key={pageNum}
                         onClick={() => onPageChange(activeTab, pageNum, currentPagination.limit)}
-                        className={`w-10 h-10 rounded-lg font-medium transition-colors ${
+                        className={`w-9 h-9 rounded-xl font-semibold text-sm transition-colors ${
                           currentPagination.page === pageNum
-                            ? 'bg-green-600 text-white'
-                            : 'border border-gray-300 text-gray-700 hover:bg-gray-50'
+                            ? 'bg-indigo-600 text-white shadow-sm shadow-indigo-600/30'
+                            : 'ring-1 ring-gray-200 text-gray-600 hover:bg-gray-50'
                         }`}
                       >
                         {pageNum}
@@ -615,32 +644,32 @@ const ActiveOffersTab = ({
                 <button
                   onClick={goToNextPage}
                   disabled={currentPagination.page === currentPagination.totalPages}
-                  className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+                  className="px-3.5 py-2.5 ring-1 ring-gray-200 rounded-xl hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed flex items-center text-sm font-medium text-gray-600 transition-colors"
                 >
                   Next
-                  <FaArrowRight className="h-4 w-4 ml-1" />
+                  <FaArrowRight className="h-3 w-3 ml-1.5" />
                 </button>
                 
                 <button
                   onClick={goToLastPage}
                   disabled={currentPagination.page === currentPagination.totalPages}
-                  className="p-2 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="p-2.5 ring-1 ring-gray-200 rounded-xl hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                   title="Last Page"
                 >
-                  <FaFastForward className="h-4 w-4" />
+                  <FaFastForward className="h-3.5 w-3.5 text-gray-600" />
                 </button>
               </div>
               
               {/* Items per page selector */}
-              <div className="flex items-center space-x-2">
-                <span className="text-sm text-gray-500">Show:</span>
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-gray-500 font-medium">Show:</span>
                 <select
                   value={currentPagination.limit}
                   onChange={(e) => {
                     const newLimit = parseInt(e.target.value);
                     onPageChange(activeTab, 1, newLimit);
                   }}
-                  className="px-2 py-1 border border-gray-300 rounded-lg text-sm focus:ring-green-500 focus:border-green-500"
+                  className="px-3 py-2 ring-1 ring-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/40"
                 >
                   <option value={6}>6 per page</option>
                   <option value={9}>9 per page</option>
@@ -666,7 +695,7 @@ const ActiveOffersTab = ({
         />
       )}
 
-      {/* Edit Flash Deal Modal - You'll need to create this component */}
+      {/* Edit Flash Deal Modal */}
       {showEditFlashDealModal && selectedFlashDeal && (
         <EditFlashDealModal
           flashDeal={selectedFlashDeal}
@@ -683,26 +712,26 @@ const ActiveOffersTab = ({
       {showDeleteConfirm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div 
-            className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" 
+            className="fixed inset-0 bg-gray-900/40 backdrop-blur-sm transition-opacity" 
             onClick={handleCancelDelete} 
           />
           
-          <div className="relative bg-white rounded-lg text-left overflow-hidden shadow-xl w-full max-w-lg z-10">
-            <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-              <div className="flex items-start">
-                <div className="flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100">
-                  <FaExclamationTriangle className="h-6 w-6 text-red-600" />
+          <div className="relative bg-white rounded-2xl text-left overflow-hidden shadow-xl w-full max-w-lg z-10">
+            <div className="px-6 pt-6 pb-4">
+              <div className="flex items-start gap-4">
+                <div className="flex-shrink-0 flex items-center justify-center h-11 w-11 rounded-xl bg-rose-50">
+                  <FaExclamationTriangle className="h-5 w-5 text-rose-500" />
                 </div>
-                <div className="mt-0 ml-4">
-                  <h3 className="text-lg leading-6 font-medium text-gray-900">
+                <div>
+                  <h3 className="text-lg font-bold text-gray-900">
                     Delete {itemTypeToDelete === 'offer' ? 'Offer' : 'Flash Deal'}
                   </h3>
-                  <div className="mt-2">
+                  <div className="mt-1.5">
                     <p className="text-sm text-gray-500">
                       Are you sure you want to delete this {itemTypeToDelete}? This action cannot be undone.
                     </p>
                     {itemToDelete && (
-                      <p className="mt-2 text-sm font-medium text-gray-700">
+                      <p className="mt-2.5 text-sm font-semibold text-gray-800 bg-gray-50 rounded-lg px-3 py-2">
                         {itemTypeToDelete === 'offer' 
                           ? `Offer: ${itemToDelete.offerTitle || itemToDelete.offerId}`
                           : `Flash Deal: ${itemToDelete.title || itemToDelete.flashDealId}`}
@@ -712,16 +741,16 @@ const ActiveOffersTab = ({
                 </div>
               </div>
             </div>
-            <div className="bg-gray-50 px-4 py-3 flex flex-row-reverse gap-2">
+            <div className="bg-gray-50 px-6 py-4 flex flex-row-reverse gap-2.5">
               <button
                 type="button"
                 onClick={handleConfirmDelete}
                 disabled={deleting}
-                className="inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 text-sm disabled:opacity-50"
+                className="inline-flex justify-center items-center rounded-xl px-4 py-2.5 bg-rose-600 text-sm font-semibold text-white hover:bg-rose-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-rose-500 disabled:opacity-60 transition-colors"
               >
                 {deleting ? (
                   <>
-                    <FaSpinner className="animate-spin mr-2" />
+                    <FaSpinner className="animate-spin mr-2 h-3.5 w-3.5" />
                     Deleting...
                   </>
                 ) : (
@@ -731,7 +760,7 @@ const ActiveOffersTab = ({
               <button
                 type="button"
                 onClick={handleCancelDelete}
-                className="inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 text-sm"
+                className="inline-flex justify-center rounded-xl px-4 py-2.5 bg-white text-sm font-semibold text-gray-700 ring-1 ring-gray-200 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
               >
                 Cancel
               </button>

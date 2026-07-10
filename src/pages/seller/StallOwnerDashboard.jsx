@@ -791,7 +791,7 @@ export default function StallOwnerDashboard() {
         return;
       }
       
-      const response = await sellerApi.enableOffer(offer.offerId, startDate, endDate);
+      const response = await sellerApi.enableOffer(offer._id, startDate, endDate);
       
       if (response.success) {
         showToast('Offer enabled successfully');

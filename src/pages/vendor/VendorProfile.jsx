@@ -24,7 +24,8 @@ import {
   FaEdit,
   FaLock,
   FaUserCircle,
-  FaExclamationTriangle
+  FaExclamationTriangle,
+  FaShieldAlt
 } from 'react-icons/fa';
 
 const VendorProfile = () => {
@@ -341,27 +342,29 @@ const VendorProfile = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-purple-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <div className="w-20 h-20 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-gray-700 text-lg font-medium">Loading your profile...</p>
+          <div className="w-14 h-14 rounded-full bg-indigo-50 flex items-center justify-center mx-auto mb-4">
+            <div className="w-7 h-7 border-[3px] border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
+          </div>
+          <p className="text-gray-500 text-sm font-medium">Loading your profile...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50">
+    <div className="min-h-screen bg-gray-50">
       {/* Mobile Header */}
-      <div className="lg:hidden bg-white shadow-md px-4 py-3 flex items-center justify-between">
+      <div className="lg:hidden bg-white/95 backdrop-blur-sm shadow-sm ring-1 ring-gray-100 px-4 py-3 flex items-center justify-between sticky top-0 z-20">
         <button
           onClick={() => setSidebarOpen(!sidebarOpen)}
-          className="p-2 rounded-lg hover:bg-gray-100"
+          className="p-2 rounded-xl hover:bg-gray-50 text-gray-600"
         >
-          {sidebarOpen ? <FaTimes className="h-6 w-6" /> : <FaBars className="h-6 w-6" />}
+          {sidebarOpen ? <FaTimes className="h-5 w-5" /> : <FaBars className="h-5 w-5" />}
         </button>
-        <h1 className="text-xl font-bold text-indigo-600">Vendor Profile</h1>
-        <div className="w-10"></div>
+        <h1 className="text-lg font-bold text-gray-900">Vendor Profile</h1>
+        <div className="w-9"></div>
       </div>
 
       <div className="flex">
@@ -370,70 +373,73 @@ const VendorProfile = () => {
           fixed lg:static inset-y-0 left-0 transform 
           ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} 
           lg:translate-x-0 transition duration-200 ease-in-out
-          z-30 w-64 bg-white shadow-xl h-screen overflow-y-auto
+          z-30 w-64 bg-white ring-1 ring-gray-100 shadow-sm h-screen overflow-y-auto
         `}>
           <div className="p-6">
-            <div className="flex items-center space-x-3 mb-8">
-              <FaStore className="h-8 w-8 text-indigo-600" />
-              <span className="text-xl font-bold text-gray-800">Vendor Panel</span>
+            <div className="flex items-center gap-3 mb-8">
+              <div className="bg-gradient-to-br from-[#4F46E5] to-[#6D28D9] p-2.5 rounded-xl shadow-sm">
+                <FaStore className="h-5 w-5 text-white" />
+              </div>
+              <span className="text-lg font-bold text-gray-900">Vendor Panel</span>
             </div>
 
             {/* Vendor Info */}
-            <div className="mb-6 p-4 bg-gradient-to-r from-indigo-50 to-purple-50 rounded-lg">
-              <div className="flex items-center space-x-3">
-                <div className="w-12 h-12 rounded-full bg-indigo-200 flex items-center justify-center">
+            <div className="mb-6 p-4 bg-gradient-to-br from-[#1E1B4B] to-[#312E81] rounded-2xl relative overflow-hidden">
+              <div className="absolute -right-6 -bottom-6 w-20 h-20 rounded-full bg-white/5" />
+              <div className="relative flex items-center gap-3">
+                <div className="w-11 h-11 rounded-full bg-white/10 ring-2 ring-white/20 flex items-center justify-center shrink-0 overflow-hidden">
                   {profilePreview ? (
                     <img src={profilePreview} alt="Profile" className="w-full h-full rounded-full object-cover" />
                   ) : (
-                    <FaUserCircle className="w-8 h-8 text-indigo-600" />
+                    <FaUserCircle className="w-7 h-7 text-indigo-200" />
                   )}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-gray-900 truncate">{formData.name || 'Vendor'}</p>
-                  <p className="text-xs text-gray-500 truncate">{formData.email}</p>
+                  <p className="text-sm font-semibold text-white truncate">{formData.name || 'Vendor'}</p>
+                  <p className="text-xs text-indigo-300 truncate">{formData.email}</p>
                 </div>
               </div>
             </div>
 
             {/* Navigation Links */}
-            <nav className="space-y-2">
+            <nav className="space-y-1.5">
               <Link
                 to="/vendor/dashboard"
-                className="flex items-center space-x-3 px-4 py-3 text-gray-700 rounded-lg hover:bg-indigo-50 transition-colors"
+                className="flex items-center gap-3 px-4 py-3 text-gray-600 rounded-xl hover:bg-gray-50 hover:text-gray-900 transition-colors text-sm font-medium"
               >
-                <FaTachometerAlt className="h-5 w-5" />
+                <FaTachometerAlt className="h-4 w-4" />
                 <span>Dashboard</span>
               </Link>
               
               <button
                 onClick={() => setActiveTab('profile')}
-                className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-colors text-sm font-semibold ${
                   activeTab === 'profile' 
-                    ? 'bg-indigo-600 text-white' 
-                    : 'text-gray-700 hover:bg-indigo-50'
+                    ? 'bg-gradient-to-r from-[#4F46E5] to-[#6D28D9] text-white shadow-sm shadow-indigo-600/25' 
+                    : 'text-gray-600 hover:bg-gray-50'
                 }`}
               >
-                <FaEdit className="h-5 w-5" />
+                <FaEdit className="h-4 w-4" />
                 <span>Edit Profile</span>
               </button>
 
               <button
                 onClick={() => setActiveTab('password')}
-                className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-colors text-sm font-semibold ${
                   activeTab === 'password' 
-                    ? 'bg-indigo-600 text-white' 
-                    : 'text-gray-700 hover:bg-indigo-50'
+                    ? 'bg-gradient-to-r from-[#4F46E5] to-[#6D28D9] text-white shadow-sm shadow-indigo-600/25' 
+                    : 'text-gray-600 hover:bg-gray-50'
                 }`}
               >
-                <FaLock className="h-5 w-5" />
+                <FaLock className="h-4 w-4" />
                 <span>Change Password</span>
               </button>
 
               <button
                 onClick={handleLogout}
-                className="w-full flex items-center space-x-3 px-4 py-3 text-red-600 rounded-lg hover:bg-red-50 transition-colors"
+                className="w-full flex items-center gap-3 px-4 py-3 text-rose-600 rounded-xl hover:bg-rose-50 transition-colors text-sm font-semibold"
               >
-                <FaSignOutAlt className="h-5 w-5" />
+                <FaSignOutAlt className="h-4 w-4" />
                 <span>Logout</span>
               </button>
             </nav>
@@ -441,19 +447,20 @@ const VendorProfile = () => {
         </div>
 
         {/* Main Content */}
-        <div className="flex-1 p-4 lg:p-8">
+        <div className="flex-1 p-4 lg:p-8 max-w-5xl">
           {/* Header */}
-          <div className="bg-white rounded-2xl shadow-lg p-6 mb-6">
-            <div className="flex justify-between items-center">
+          <div className="bg-white rounded-2xl shadow-sm ring-1 ring-gray-100 p-6 mb-6">
+            <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4">
               <div>
-                <h1 className="text-2xl lg:text-3xl font-bold text-gray-900">Profile Settings</h1>
-                <p className="text-gray-600 mt-1">Manage your vendor account and shop information</p>
+                <p className="text-[11px] font-semibold tracking-wider uppercase text-indigo-500 mb-1">Account</p>
+                <h1 className="text-2xl font-bold text-gray-900">Profile Settings</h1>
+                <p className="text-gray-500 text-sm mt-1">Manage your vendor account and shop information</p>
               </div>
               <Link
                 to="/vendor/dashboard"
-                className="hidden lg:flex items-center px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50"
+                className="hidden lg:flex items-center px-4 py-2.5 ring-1 ring-gray-200 text-gray-700 rounded-xl hover:bg-gray-50 font-medium text-sm transition-colors shrink-0"
               >
-                <FaArrowLeft className="h-4 w-4 mr-2" />
+                <FaArrowLeft className="h-3.5 w-3.5 mr-2" />
                 Back to Dashboard
               </Link>
             </div>
@@ -461,28 +468,28 @@ const VendorProfile = () => {
 
           {/* Success Message */}
           {successMessage && (
-            <div className="bg-green-50 border border-green-200 rounded-xl p-4 mb-6">
-              <div className="flex">
-                <FaCheckCircle className="h-5 w-5 text-green-400 mr-3 flex-shrink-0 mt-0.5" />
-                <p className="text-green-800">{successMessage}</p>
+            <div className="bg-emerald-50 ring-1 ring-emerald-200 rounded-2xl p-4 mb-6">
+              <div className="flex items-start gap-3">
+                <FaCheckCircle className="h-4 w-4 text-emerald-500 mt-0.5 shrink-0" />
+                <p className="text-sm font-medium text-emerald-800">{successMessage}</p>
               </div>
             </div>
           )}
 
           {/* Error Message */}
           {errors.general && (
-            <div className="bg-red-50 border border-red-200 rounded-xl p-4 mb-6">
-              <div className="flex">
-                <FaExclamationTriangle className="h-5 w-5 text-red-400 mr-3 flex-shrink-0 mt-0.5" />
-                <p className="text-red-700">{errors.general}</p>
+            <div className="bg-rose-50 ring-1 ring-rose-200 rounded-2xl p-4 mb-6">
+              <div className="flex items-start gap-3">
+                <FaExclamationTriangle className="h-4 w-4 text-rose-500 mt-0.5 shrink-0" />
+                <p className="text-sm font-medium text-rose-700">{errors.general}</p>
               </div>
             </div>
           )}
 
           {/* Profile Card */}
-          <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
-            <div className="border-b border-gray-200 bg-gray-50 px-6 py-4">
-              <h2 className="text-xl font-semibold text-gray-800">
+          <div className="bg-white rounded-2xl shadow-sm ring-1 ring-gray-100 overflow-hidden">
+            <div className="border-b border-gray-100 px-6 py-4 bg-gradient-to-r from-indigo-50/70 via-white to-white">
+              <h2 className="text-lg font-bold text-gray-900">
                 {activeTab === 'profile' ? 'Profile Information' : 'Change Password'}
               </h2>
             </div>
@@ -495,7 +502,7 @@ const VendorProfile = () => {
                     <div className="lg:col-span-1">
                       <div className="text-center">
                         <div className="relative inline-block">
-                          <div className="w-40 h-40 rounded-full border-4 border-indigo-100 overflow-hidden">
+                          <div className="w-36 h-36 rounded-full ring-4 ring-indigo-50 overflow-hidden">
                             {profilePreview ? (
                               <img
                                 src={profilePreview}
@@ -503,17 +510,17 @@ const VendorProfile = () => {
                                 className="w-full h-full object-cover"
                               />
                             ) : (
-                              <div className="w-full h-full bg-gradient-to-br from-indigo-100 to-purple-100 flex items-center justify-center">
-                                <FaUser className="w-20 h-20 text-indigo-400" />
+                              <div className="w-full h-full bg-gradient-to-br from-indigo-50 to-purple-50 flex items-center justify-center">
+                                <FaUser className="w-16 h-16 text-indigo-300" />
                               </div>
                             )}
                           </div>
                           
                           <label
                             htmlFor="profile-image"
-                            className="absolute bottom-2 right-2 bg-indigo-600 text-white p-3 rounded-full cursor-pointer hover:bg-indigo-700 shadow-lg transition-colors"
+                            className="absolute bottom-1 right-1 bg-gradient-to-br from-[#4F46E5] to-[#6D28D9] text-white p-2.5 rounded-full cursor-pointer hover:opacity-90 shadow-md transition-opacity"
                           >
-                            <FaCamera className="h-5 w-5" />
+                            <FaCamera className="h-4 w-4" />
                           </label>
                           <input
                             id="profile-image"
@@ -522,45 +529,50 @@ const VendorProfile = () => {
                             onChange={handleProfileImageChange}
                             className="hidden"
                           />
-                          
-                          <p className="text-sm text-gray-500 mt-4">
-                            Click to upload profile picture
-                          </p>
-                          <p className="text-xs text-gray-400">
-                            JPG, PNG • Max 5MB
-                          </p>
                         </div>
+                        <p className="text-sm text-gray-500 mt-4">
+                          Click the camera to upload a photo
+                        </p>
+                        <p className="text-xs text-gray-400">
+                          JPG, PNG • Max 5MB
+                        </p>
                       </div>
 
                       {/* License Info */}
                       {formData.vendorLicenseNumber && (
-                        <div className="mt-6 p-4 bg-gradient-to-r from-indigo-50 to-purple-50 rounded-lg">
-                          <div className="flex items-center space-x-2 mb-2">
-                            <FaIdCard className="h-4 w-4 text-indigo-600" />
-                            <h3 className="font-medium text-gray-900">License Number</h3>
+                        <div className="mt-6 p-4 bg-gradient-to-r from-[#4F46E5] to-[#6D28D9] rounded-2xl relative overflow-hidden">
+                          <div className="pointer-events-none absolute -left-8 top-0 h-full w-14 bg-white/10 -skew-x-12" />
+                          <div className="relative flex items-center gap-2 mb-2">
+                            <div className="p-1.5 rounded-lg bg-white/15">
+                              <FaIdCard className="h-3.5 w-3.5 text-amber-300" />
+                            </div>
+                            <h3 className="text-xs font-semibold tracking-wide uppercase text-indigo-100">License Number</h3>
                           </div>
-                          <p className="text-sm text-gray-700 font-mono bg-white p-2 rounded border border-indigo-100">
+                          <p className="relative text-sm text-white font-mono bg-white/10 p-2.5 rounded-lg ring-1 ring-white/20">
                             {formData.vendorLicenseNumber}
                           </p>
                         </div>
                       )}
 
                       {/* Shop Stats */}
-                      <div className="mt-6 p-4 bg-gray-50 rounded-lg">
-                        <h3 className="font-semibold text-gray-900 mb-3">Shop Statistics</h3>
-                        <div className="space-y-2">
-                          <div className="flex justify-between text-sm">
-                            <span className="text-gray-600">Floors:</span>
-                            <span className="font-medium text-gray-900">{formData.vendorShopNumberOfFloors || 0}</span>
+                      <div className="mt-6 p-4 bg-gray-50 rounded-2xl ring-1 ring-gray-100">
+                        <h3 className="text-[11px] font-semibold tracking-wide uppercase text-gray-400 mb-3">Shop Statistics</h3>
+                        <div className="space-y-2.5">
+                          <div className="flex justify-between items-center text-sm">
+                            <span className="text-gray-500">Floors</span>
+                            <span className="font-semibold text-gray-900 tabular-nums">{formData.vendorShopNumberOfFloors || 0}</span>
                           </div>
-                          <div className="flex justify-between text-sm">
-                            <span className="text-gray-600">Stalls:</span>
-                            <span className="font-medium text-gray-900">{formData.vendorShopNumberOfStalls || 0}</span>
+                          <div className="flex justify-between items-center text-sm">
+                            <span className="text-gray-500">Stalls</span>
+                            <span className="font-semibold text-gray-900 tabular-nums">{formData.vendorShopNumberOfStalls || 0}</span>
                           </div>
-                          <div className="flex justify-between text-sm">
-                            <span className="text-gray-600">Hours:</span>
-                            <span className="font-medium text-gray-900">
-                              {formData.vendorShopOpeningTime || 'N/A'} - {formData.vendorShopClosingTime || 'N/A'}
+                          <div className="flex justify-between items-center text-sm pt-2 border-t border-gray-100">
+                            <span className="text-gray-500 flex items-center gap-1.5">
+                              <FaClock className="h-3 w-3 text-gray-400" />
+                              Hours
+                            </span>
+                            <span className="font-semibold text-gray-900 text-xs">
+                              {formData.vendorShopOpeningTime || 'N/A'} – {formData.vendorShopClosingTime || 'N/A'}
                             </span>
                           </div>
                         </div>
@@ -640,13 +652,13 @@ const VendorProfile = () => {
                           </label>
                           <textarea
                             name="shopAddress"
-                            className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:outline-none focus:border-indigo-500 min-h-[100px] resize-none"
+                            className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-400 min-h-[100px] resize-none text-sm transition-all"
                             placeholder="Complete shop address..."
                             value={formData.shopAddress}
                             onChange={handleChange}
                             required
                           />
-                          {errors.shopAddress && <p className="text-red-500 text-sm mt-1">{errors.shopAddress}</p>}
+                          {errors.shopAddress && <p className="text-rose-500 text-xs mt-1.5 font-medium">{errors.shopAddress}</p>}
                         </div>
 
                         <div>
@@ -655,7 +667,7 @@ const VendorProfile = () => {
                           </label>
                           <textarea
                             name="vendorShopDescription"
-                            className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:outline-none focus:border-indigo-500 min-h-[120px] resize-none"
+                            className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-400 min-h-[120px] resize-none text-sm transition-all"
                             placeholder="Describe your shop/mall..."
                             value={formData.vendorShopDescription}
                             onChange={handleChange}
@@ -706,13 +718,13 @@ const VendorProfile = () => {
                           />
                         </div>
 
-                        <div className="pt-6 border-t border-gray-200">
+                        <div className="pt-6 border-t border-gray-100">
                           <button
                             type="submit"
                             disabled={updating}
-                            className="px-8 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl font-semibold hover:from-indigo-700 hover:to-purple-700 transition duration-300 disabled:opacity-70 flex items-center"
+                            className="px-6 py-3 bg-gradient-to-r from-[#4F46E5] to-[#6D28D9] text-white rounded-xl font-semibold text-sm hover:opacity-90 transition-opacity disabled:opacity-60 flex items-center shadow-sm shadow-indigo-600/25"
                           >
-                            <FaSave className="h-5 w-5 mr-2" />
+                            <FaSave className="h-4 w-4 mr-2" />
                             {updating ? 'Updating...' : 'Save Changes'}
                           </button>
                         </div>
@@ -724,9 +736,14 @@ const VendorProfile = () => {
                 /* Password Change Form */
                 <form onSubmit={handleChangePassword} className="max-w-lg mx-auto">
                   <div className="space-y-6">
-                    <div className="bg-gradient-to-r from-indigo-50 to-purple-50 p-6 rounded-xl">
-                      <h3 className="text-lg font-semibold text-gray-900 mb-4">Change Your Password</h3>
-                      <p className="text-sm text-gray-600 mb-6">
+                    <div className="bg-gray-50 ring-1 ring-gray-100 p-6 rounded-2xl">
+                      <div className="flex items-center gap-2.5 mb-1">
+                        <div className="p-2 rounded-lg bg-indigo-100 text-indigo-600">
+                          <FaShieldAlt className="h-3.5 w-3.5" />
+                        </div>
+                        <h3 className="text-base font-bold text-gray-900">Change Your Password</h3>
+                      </div>
+                      <p className="text-sm text-gray-500 mb-6 ml-10">
                         Choose a strong password that you don't use elsewhere
                       </p>
                       
@@ -772,15 +789,15 @@ const VendorProfile = () => {
                         <button
                           type="submit"
                           disabled={updating}
-                          className="w-full px-6 py-3 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-xl font-semibold hover:from-green-700 hover:to-emerald-700 transition duration-300 disabled:opacity-70 flex items-center justify-center"
+                          className="w-full px-6 py-3 bg-gradient-to-r from-[#4F46E5] to-[#6D28D9] text-white rounded-xl font-semibold text-sm hover:opacity-90 transition-opacity disabled:opacity-60 flex items-center justify-center shadow-sm shadow-indigo-600/25"
                         >
-                          <FaKey className="h-5 w-5 mr-2" />
+                          <FaKey className="h-4 w-4 mr-2" />
                           {updating ? 'Changing Password...' : 'Change Password'}
                         </button>
                       </div>
                     </div>
 
-                    <div className="text-sm text-gray-500 text-center">
+                    <div className="text-xs text-gray-400 text-center leading-relaxed">
                       <p>Password must be at least 8 characters long</p>
                       <p>Use a mix of letters, numbers, and symbols for better security</p>
                     </div>
@@ -795,7 +812,7 @@ const VendorProfile = () => {
       {/* Mobile overlay */}
       {sidebarOpen && (
         <div
-          className="fixed inset-0 bg-black bg-opacity-50 z-20 lg:hidden"
+          className="fixed inset-0 bg-gray-900/40 backdrop-blur-sm z-20 lg:hidden"
           onClick={() => setSidebarOpen(false)}
         />
       )}
