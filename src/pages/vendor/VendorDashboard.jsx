@@ -4,9 +4,11 @@ import { useNavigate } from 'react-router-dom';
 import { vendorApi } from '../../hooks/vendorApi';
 import DashboardHeader from '../../components/vendor/dashboard/DashboardHeader';
 import DashboardTabs from '../../components/vendor/dashboard/DashboardTabs';
+import VendorSidebar from '../../components/vendor/dashboard/components/VendorSidebar';
 import ErrorBanner from '../../components/common/ErrorBanner';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
 import StatsOverview from '../../components/vendor/dashboard/StatsOverview';
+import { FaBars, FaTimes } from 'react-icons/fa';
 
 // Tab Components
 import PendingStallsTab from '../../components/vendor/dashboard/tabs/PendingStallsTab';
@@ -31,6 +33,7 @@ const VendorDashboard = () => {
   const navigate = useNavigate();
   const [vendorData, setVendorData] = useState(null);
   const { logoutVendor } = useAuth();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   // Stalls data
   const [pendingStalls, setPendingStalls] = useState([]);
@@ -903,201 +906,241 @@ const VendorDashboard = () => {
   const totalOffersCount = activeOffers.length + activeFlashDeals.length;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
-      <DashboardHeader
-        vendorData={vendorData}
-        pendingStallsCount={pendingStalls.length}
-        onLogout={handleLogout}
-      />
+    <div className="min-h-screen bg-gray-50">
+      {/* Mobile Header */}
+      <div className="lg:hidden bg-white/95 backdrop-blur-sm shadow-sm ring-1 ring-gray-100 px-4 py-3 flex items-center justify-between sticky top-0 z-30">
+        <button
+          onClick={() => setSidebarOpen(!sidebarOpen)}
+          className="p-2 rounded-xl hover:bg-gray-50 text-gray-600"
+        >
+          {sidebarOpen ? <FaTimes className="h-5 w-5" /> : <FaBars className="h-5 w-5" />}
+        </button>
+        <h1 className="text-lg font-bold text-gray-900">Vendor Dashboard</h1>
+        <div className="w-9"></div>
+      </div>
 
-      <DashboardTabs
-        activeTab={activeTab}
-        onTabChange={setActiveTab}
-        pendingCount={pendingStalls.length}
-        approvedCount={approvedStalls.length}
-        rejectedCount={rejectedStalls.length}
-        allStallsCount={allStalls.length}
-        licensesCount={licenses.length}
-        eventsCount={vendorEvents.length}
-        offersCount={totalOffersCount}
-      />
+      <div className="flex">
+        {/* Sidebar */}
+        <div className={`
+          fixed lg:static inset-y-0 left-0 transform
+          ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
+          lg:translate-x-0 transition duration-200 ease-in-out
+          z-40 w-64 bg-white ring-1 ring-gray-100 shadow-sm h-screen overflow-y-auto shrink-0
+        `}>
+          <VendorSidebar
+            vendorData={vendorData}
+            profilePreview={vendorData?.profile || vendorData?.profileImage}
+            activePage="dashboard"
+            onLogout={handleLogout}
+          />
+        </div>
 
-      {error && (
-        <ErrorBanner error={error} onDismiss={() => setError('')} />
-      )}
+        {/* Main Content */}
+        <div className="flex-1 min-w-0">
+          <DashboardHeader
+            vendorData={vendorData}
+            pendingStallsCount={pendingStalls.length}
+            onLogout={handleLogout}
+          />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <StatsOverview
-          pendingStalls={pendingStalls.length}
-          approvedStalls={approvedStalls.length}
-          rejectedStalls={rejectedStalls.length}
-          allStalls={allStalls.length}
-          licenses={licenses.length}
-        />
+          <DashboardTabs
+            activeTab={activeTab}
+            onTabChange={setActiveTab}
+            pendingCount={pendingStalls.length}
+            approvedCount={approvedStalls.length}
+            rejectedCount={rejectedStalls.length}
+            allStallsCount={allStalls.length}
+            licensesCount={licenses.length}
+            eventsCount={vendorEvents.length}
+            offersCount={totalOffersCount}
+          />
 
-        <div className="space-y-8">
-          {activeTab === 'pending' && (
-            <PendingStallsTab
-              pendingStalls={pendingStalls}
-              actionLoading={actionLoading}
-              searchTerm={searchTerm}
-              setSearchTerm={setSearchTerm}
-              pagination={pagination.pending}
-              onPageChange={handlePendingPageChange}
-              onViewDetails={loadStallDetails}
-              onApprove={handleApproveStall}
-              onReject={(stall) => {
-                setSelectedStall(stall);
-                setShowRejectModal(true);
-              }}
-              getFilteredStalls={getFilteredStalls}
-              getPaginatedItems={getPaginatedItems}
-              onRefresh={handleRefreshPendingStalls}
-            />
+          {error && (
+            <ErrorBanner error={error} onDismiss={() => setError('')} />
           )}
 
-          {activeTab === 'approved' && (
-            <ApprovedStallsTab
-              approvedStalls={approvedStalls}
-              actionLoading={actionLoading}
-              searchTerm={searchTerm}
-              setSearchTerm={setSearchTerm}
-              pagination={pagination.approved}
-              onPageChange={handleApprovedPageChange}
-              onViewDetails={loadStallDetails}
-              getFilteredStalls={getFilteredStalls}
-              getPaginatedItems={getPaginatedItems}
-              getRatingStars={(rating) => {
-                return '⭐'.repeat(Math.floor(rating)) + '☆'.repeat(5 - Math.floor(rating));
-              }}
-              onRefresh={handleRefreshApprovedStalls}
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <StatsOverview
+              pendingStalls={pendingStalls.length}
+              approvedStalls={approvedStalls.length}
+              rejectedStalls={rejectedStalls.length}
+              allStalls={allStalls.length}
+              licenses={licenses.length}
             />
-          )}
 
-          {activeTab === 'rejected' && (
-            <RejectedStallsTab
-              rejectedStalls={rejectedStalls}
-              actionLoading={actionLoading}
-              searchTerm={searchTerm}
-              setSearchTerm={setSearchTerm}
-              pagination={pagination.rejected}
-              onPageChange={handleRejectedPageChange}
-              onViewDetails={loadStallDetails}
-              getFilteredStalls={getFilteredStalls}
-              getPaginatedItems={getPaginatedItems}
-              onRefresh={handleRefreshRejectedStalls}
-            />
-          )}
+            <div className="space-y-8">
+              {activeTab === 'pending' && (
+                <PendingStallsTab
+                  pendingStalls={pendingStalls}
+                  actionLoading={actionLoading}
+                  searchTerm={searchTerm}
+                  setSearchTerm={setSearchTerm}
+                  pagination={pagination.pending}
+                  onPageChange={handlePendingPageChange}
+                  onViewDetails={loadStallDetails}
+                  onApprove={handleApproveStall}
+                  onReject={(stall) => {
+                    setSelectedStall(stall);
+                    setShowRejectModal(true);
+                  }}
+                  getFilteredStalls={getFilteredStalls}
+                  getPaginatedItems={getPaginatedItems}
+                  onRefresh={handleRefreshPendingStalls}
+                />
+              )}
 
-          {activeTab === 'all-stalls' && (
-            <AllStallsTab
-              allStalls={allStalls}
-              searchTerm={searchTerm}
-              setSearchTerm={setSearchTerm}
-              pagination={pagination.all}
-              onPageChange={handleAllStallsPageChange}
-              onViewDetails={loadStallDetails}
-              getFilteredStalls={getFilteredStalls}
-              getPaginatedItems={getPaginatedItems}
-              onRefresh={handleRefreshAllStalls}
-              actionLoading={actionLoading}
-            />
-          )}
+              {activeTab === 'approved' && (
+                <ApprovedStallsTab
+                  approvedStalls={approvedStalls}
+                  actionLoading={actionLoading}
+                  searchTerm={searchTerm}
+                  setSearchTerm={setSearchTerm}
+                  pagination={pagination.approved}
+                  onPageChange={handleApprovedPageChange}
+                  onViewDetails={loadStallDetails}
+                  getFilteredStalls={getFilteredStalls}
+                  getPaginatedItems={getPaginatedItems}
+                  getRatingStars={(rating) => {
+                    return '⭐'.repeat(Math.floor(rating)) + '☆'.repeat(5 - Math.floor(rating));
+                  }}
+                  onRefresh={handleRefreshApprovedStalls}
+                />
+              )}
 
-          {activeTab === 'licenses' && (
-            <LicensesTab
-              licenses={licenses}
-              licensesLoading={licensesLoading}
-              licensesError={licensesError}
-              licenseFilters={licenseFilters}
-              setLicenseFilters={setLicenseFilters}
-              showLicenseFilters={showLicenseFilters}
-              setShowLicenseFilters={setShowLicenseFilters}
-              licenseSearchTerm={licenseSearchTerm}
-              setLicenseSearchTerm={setLicenseSearchTerm}
-              licenseItemsPerPage={licenseItemsPerPage}
-              setLicenseItemsPerPage={setLicenseItemsPerPage}
-              licenseCurrentPage={licenseCurrentPage}
-              setLicenseCurrentPage={setLicenseCurrentPage}
-              clearLicenseFilters={() => {
-                setLicenseFilters({});
-                setLicenseSearchTerm('');
-                setLicenseCurrentPage(1);
-              }}
-              onRefresh={loadVendorLicenses}
-              onAssignLicense={(license) => {
-                setSelectedLicense(license);
-                setShowAssignLicenseModal(true);
-              }}
-              approvedStalls={approvedStalls}
-            />
-          )}
+              {activeTab === 'rejected' && (
+                <RejectedStallsTab
+                  rejectedStalls={rejectedStalls}
+                  actionLoading={actionLoading}
+                  searchTerm={searchTerm}
+                  setSearchTerm={setSearchTerm}
+                  pagination={pagination.rejected}
+                  onPageChange={handleRejectedPageChange}
+                  onViewDetails={loadStallDetails}
+                  getFilteredStalls={getFilteredStalls}
+                  getPaginatedItems={getPaginatedItems}
+                  onRefresh={handleRefreshRejectedStalls}
+                />
+              )}
 
-          {activeTab === 'events' && (
-            <EventsTab
-              vendorEvents={vendorEvents}
-              vendorEventsLoading={vendorEventsLoading}
-              vendorEventsError={vendorEventsError}
-              activeFilters={activeFilters}
-              setActiveFilters={setActiveFilters}
-              showFilters={showFilters}
-              setShowFilters={setShowFilters}
-              searchTerm={searchTerm}
-              setSearchTerm={setSearchTerm}
-              itemsPerPage={itemsPerPage}
-              setItemsPerPage={setItemsPerPage}
-              currentPage={currentPage}
-              setCurrentPage={setCurrentPage}
-              clearAllFilters={() => {
-                setActiveFilters({});
-                setSearchTerm('');
-                setCurrentPage(1);
-              }}
-              onCreateEvent={() => {
-                setShowCreateEventModal(true);
-              }}
-              onViewEvent={loadSingleEvent}
-              onEditEvent={(event) => {
-                setSelectedEvent(event);
-                setShowEventModal(true);
-              }}
-              onDeleteEvent={handleDeleteEvent}
-              actionLoading={actionLoading}
-            />
-          )}
+              {activeTab === 'all-stalls' && (
+                <AllStallsTab
+                  allStalls={allStalls}
+                  searchTerm={searchTerm}
+                  setSearchTerm={setSearchTerm}
+                  pagination={pagination.all}
+                  onPageChange={handleAllStallsPageChange}
+                  onViewDetails={loadStallDetails}
+                  getFilteredStalls={getFilteredStalls}
+                  getPaginatedItems={getPaginatedItems}
+                  onRefresh={handleRefreshAllStalls}
+                  actionLoading={actionLoading}
+                />
+              )}
 
-          {activeTab === 'offers' && (
-            <ActiveOffersTab
-              activeOffers={activeOffers}
-              activeFlashDeals={activeFlashDeals}
-              loading={activeItemsLoading}
-              error={activeItemsError}
-              pagination={activeItemsPagination}
-              onPageChange={handleActiveItemsPageChange}
-              onRefresh={handleRefreshActiveItems}
-              getPaginatedItems={getPaginatedActiveItems}
-              canEdit={canEditItems}
-              onItemUpdated={(updatedItem, type) => {
-                console.log(`${type} updated:`, updatedItem);
-                loadActiveOffersAndFlashDeals(); // Refresh all items after update
-              }}
-            />
-          )}
+              {activeTab === 'licenses' && (
+                <LicensesTab
+                  licenses={licenses}
+                  licensesLoading={licensesLoading}
+                  licensesError={licensesError}
+                  licenseFilters={licenseFilters}
+                  setLicenseFilters={setLicenseFilters}
+                  showLicenseFilters={showLicenseFilters}
+                  setShowLicenseFilters={setShowLicenseFilters}
+                  licenseSearchTerm={licenseSearchTerm}
+                  setLicenseSearchTerm={setLicenseSearchTerm}
+                  licenseItemsPerPage={licenseItemsPerPage}
+                  setLicenseItemsPerPage={setLicenseItemsPerPage}
+                  licenseCurrentPage={licenseCurrentPage}
+                  setLicenseCurrentPage={setLicenseCurrentPage}
+                  clearLicenseFilters={() => {
+                    setLicenseFilters({});
+                    setLicenseSearchTerm('');
+                    setLicenseCurrentPage(1);
+                  }}
+                  onRefresh={loadVendorLicenses}
+                  onAssignLicense={(license) => {
+                    setSelectedLicense(license);
+                    setShowAssignLicenseModal(true);
+                  }}
+                  approvedStalls={approvedStalls}
+                />
+              )}
 
-          {activeTab === 'overview' && (
-            <OverviewTab
-              pendingStalls={pendingStalls}
-              approvedStalls={approvedStalls}
-              rejectedStalls={rejectedStalls}
-              licenses={licenses}
-              vendorData={vendorData}
-              onTabChange={setActiveTab}
-              getPaginatedItems={getPaginatedItems}
-              onLogout={handleLogout}
-            />
-          )}
+              {activeTab === 'events' && (
+                <EventsTab
+                  vendorEvents={vendorEvents}
+                  vendorEventsLoading={vendorEventsLoading}
+                  vendorEventsError={vendorEventsError}
+                  activeFilters={activeFilters}
+                  setActiveFilters={setActiveFilters}
+                  showFilters={showFilters}
+                  setShowFilters={setShowFilters}
+                  searchTerm={searchTerm}
+                  setSearchTerm={setSearchTerm}
+                  itemsPerPage={itemsPerPage}
+                  setItemsPerPage={setItemsPerPage}
+                  currentPage={currentPage}
+                  setCurrentPage={setCurrentPage}
+                  clearAllFilters={() => {
+                    setActiveFilters({});
+                    setSearchTerm('');
+                    setCurrentPage(1);
+                  }}
+                  onCreateEvent={() => {
+                    setShowCreateEventModal(true);
+                  }}
+                  onViewEvent={loadSingleEvent}
+                  onEditEvent={(event) => {
+                    setSelectedEvent(event);
+                    setShowEventModal(true);
+                  }}
+                  onDeleteEvent={handleDeleteEvent}
+                  actionLoading={actionLoading}
+                />
+              )}
+
+              {activeTab === 'offers' && (
+                <ActiveOffersTab
+                  activeOffers={activeOffers}
+                  activeFlashDeals={activeFlashDeals}
+                  loading={activeItemsLoading}
+                  error={activeItemsError}
+                  pagination={activeItemsPagination}
+                  onPageChange={handleActiveItemsPageChange}
+                  onRefresh={handleRefreshActiveItems}
+                  getPaginatedItems={getPaginatedActiveItems}
+                  canEdit={canEditItems}
+                  onItemUpdated={(updatedItem, type) => {
+                    console.log(`${type} updated:`, updatedItem);
+                    loadActiveOffersAndFlashDeals(); // Refresh all items after update
+                  }}
+                />
+              )}
+
+              {activeTab === 'overview' && (
+                <OverviewTab
+                  pendingStalls={pendingStalls}
+                  approvedStalls={approvedStalls}
+                  rejectedStalls={rejectedStalls}
+                  licenses={licenses}
+                  vendorData={vendorData}
+                  onTabChange={setActiveTab}
+                  getPaginatedItems={getPaginatedItems}
+                  onLogout={handleLogout}
+                />
+              )}
+            </div>
+          </div>
         </div>
       </div>
+
+      {/* Mobile sidebar overlay */}
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0 bg-gray-900/40 backdrop-blur-sm z-30 lg:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
 
       {/* Modals */}
       <CreateEventModal

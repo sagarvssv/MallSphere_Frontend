@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import FormInput from '../../components/FormInput';
+import VendorSidebar from '../../components/vendor/dashboard/components/VendorSidebar'
 import { vendorApi } from '../../hooks/vendorApi';
 import {
   FaUser,
@@ -15,15 +16,9 @@ import {
   FaCamera,
   FaKey,
   FaCheckCircle,
-  FaStore,
   FaIdCard,
-  FaSignOutAlt,
-  FaTachometerAlt,
   FaBars,
   FaTimes,
-  FaEdit,
-  FaLock,
-  FaUserCircle,
   FaExclamationTriangle,
   FaShieldAlt
 } from 'react-icons/fa';
@@ -375,75 +370,14 @@ const VendorProfile = () => {
           lg:translate-x-0 transition duration-200 ease-in-out
           z-30 w-64 bg-white ring-1 ring-gray-100 shadow-sm h-screen overflow-y-auto
         `}>
-          <div className="p-6">
-            <div className="flex items-center gap-3 mb-8">
-              <div className="bg-gradient-to-br from-[#4F46E5] to-[#6D28D9] p-2.5 rounded-xl shadow-sm">
-                <FaStore className="h-5 w-5 text-white" />
-              </div>
-              <span className="text-lg font-bold text-gray-900">Vendor Panel</span>
-            </div>
-
-            {/* Vendor Info */}
-            <div className="mb-6 p-4 bg-gradient-to-br from-[#1E1B4B] to-[#312E81] rounded-2xl relative overflow-hidden">
-              <div className="absolute -right-6 -bottom-6 w-20 h-20 rounded-full bg-white/5" />
-              <div className="relative flex items-center gap-3">
-                <div className="w-11 h-11 rounded-full bg-white/10 ring-2 ring-white/20 flex items-center justify-center shrink-0 overflow-hidden">
-                  {profilePreview ? (
-                    <img src={profilePreview} alt="Profile" className="w-full h-full rounded-full object-cover" />
-                  ) : (
-                    <FaUserCircle className="w-7 h-7 text-indigo-200" />
-                  )}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-white truncate">{formData.name || 'Vendor'}</p>
-                  <p className="text-xs text-indigo-300 truncate">{formData.email}</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Navigation Links */}
-            <nav className="space-y-1.5">
-              <Link
-                to="/vendor/dashboard"
-                className="flex items-center gap-3 px-4 py-3 text-gray-600 rounded-xl hover:bg-gray-50 hover:text-gray-900 transition-colors text-sm font-medium"
-              >
-                <FaTachometerAlt className="h-4 w-4" />
-                <span>Dashboard</span>
-              </Link>
-              
-              <button
-                onClick={() => setActiveTab('profile')}
-                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-colors text-sm font-semibold ${
-                  activeTab === 'profile' 
-                    ? 'bg-gradient-to-r from-[#4F46E5] to-[#6D28D9] text-white shadow-sm shadow-indigo-600/25' 
-                    : 'text-gray-600 hover:bg-gray-50'
-                }`}
-              >
-                <FaEdit className="h-4 w-4" />
-                <span>Edit Profile</span>
-              </button>
-
-              <button
-                onClick={() => setActiveTab('password')}
-                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-colors text-sm font-semibold ${
-                  activeTab === 'password' 
-                    ? 'bg-gradient-to-r from-[#4F46E5] to-[#6D28D9] text-white shadow-sm shadow-indigo-600/25' 
-                    : 'text-gray-600 hover:bg-gray-50'
-                }`}
-              >
-                <FaLock className="h-4 w-4" />
-                <span>Change Password</span>
-              </button>
-
-              <button
-                onClick={handleLogout}
-                className="w-full flex items-center gap-3 px-4 py-3 text-rose-600 rounded-xl hover:bg-rose-50 transition-colors text-sm font-semibold"
-              >
-                <FaSignOutAlt className="h-4 w-4" />
-                <span>Logout</span>
-              </button>
-            </nav>
-          </div>
+          <VendorSidebar
+            vendorData={formData}
+            profilePreview={profilePreview}
+            activePage="profile"
+            activeProfileTab={activeTab}
+            onProfileTabChange={setActiveTab}
+            onLogout={handleLogout}
+          />
         </div>
 
         {/* Main Content */}

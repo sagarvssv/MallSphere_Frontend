@@ -18,7 +18,8 @@ import {
   FaImages,
   FaTrash,
   FaEye,
-  FaEyeSlash
+  FaEyeSlash,
+  FaHeadset
 } from 'react-icons/fa';
 
 const VendorRegister = () => {
@@ -288,66 +289,74 @@ const VendorRegister = () => {
     }
   };
 
+  const stepLabels = ['Profile & Basic Info', 'Shop Details', 'Timings & Security'];
+
   const renderStepIndicator = () => (
     <div className="mb-8">
-      <div className="flex items-center justify-between mb-4">
-        {[1, 2, 3].map((step) => (
-          <div key={step} className="flex flex-col items-center">
-            <div className={`w-10 h-10 rounded-full flex items-center justify-center font-semibold ${
-              step === currentStep 
-                ? 'bg-gradient-to-r from-indigo-600 to-indigo-700 text-white' 
-                : step < currentStep 
-                ? 'bg-green-100 text-green-600' 
-                : 'bg-gray-100 text-gray-400'
-            }`}>
-              {step < currentStep ? '✓' : step}
-            </div>
-            <span className="text-xs mt-2 text-gray-600">
-              {step === 1 ? 'Profile & Basic Info' : step === 2 ? 'Shop Details' : 'Timings & Security'}
-            </span>
-          </div>
-        ))}
-      </div>
-      <div className="relative">
-        <div className="absolute top-0 left-0 right-0 h-1 bg-gray-200"></div>
-        <div 
-          className="absolute top-0 left-0 h-1 bg-gradient-to-r from-indigo-600 to-indigo-700 transition-all duration-300"
-          style={{ width: `${((currentStep - 1) / (totalSteps - 1)) * 100}%` }}
-        ></div>
+      <div className="flex items-center mb-4">
+        {[1, 2, 3].map((step, idx) => {
+          const isDone = step < currentStep;
+          const isActive = step === currentStep;
+          return (
+            <React.Fragment key={step}>
+              <div className="flex flex-col items-center gap-1.5 shrink-0">
+                <div className={`w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold transition-colors ${
+                  isActive
+                    ? 'bg-gradient-to-br from-[#4F46E5] to-[#6D28D9] text-white'
+                    : isDone
+                      ? 'bg-emerald-50 text-emerald-600 ring-1 ring-emerald-200'
+                      : 'bg-gray-100 text-gray-400'
+                }`}>
+                  {isDone ? <FaCheck className="h-3 w-3" /> : step}
+                </div>
+                <span className={`text-[10px] font-semibold uppercase tracking-wide text-center max-w-[5.5rem] leading-tight ${
+                  isActive ? 'text-indigo-600' : isDone ? 'text-gray-500' : 'text-gray-300'
+                }`}>
+                  {stepLabels[idx]}
+                </span>
+              </div>
+              {idx < 2 && (
+                <div className={`flex-1 h-0.5 mx-2 -mt-4 rounded-full transition-colors ${
+                  step < currentStep ? 'bg-gradient-to-r from-[#4F46E5] to-[#6D28D9]' : 'bg-gray-100'
+                }`} />
+              )}
+            </React.Fragment>
+          );
+        })}
       </div>
     </div>
   );
 
   return (
     <AuthLayout type="register" role="vendor" backLink="/vendor/login">
-      <form onSubmit={handleSubmit} className="bg-white rounded-2xl p-8 shadow-xl">
+      <form onSubmit={handleSubmit}>
         {apiError && (
-          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
-            <p className="text-red-600 text-sm font-medium">{apiError}</p>
+          <div className="mb-6 p-4 bg-rose-50 ring-1 ring-rose-200 rounded-2xl">
+            <p className="text-rose-600 text-sm font-medium">{apiError}</p>
           </div>
         )}
 
         {renderStepIndicator()}
 
-        <div className="mb-6">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-xl font-bold text-gray-900">Vendor Registration</h3>
-            <span className="px-3 py-1 bg-gradient-to-r from-indigo-500 to-indigo-600 text-white text-xs font-semibold rounded-full">
+        <div className="mb-6 pb-6 border-b border-gray-100">
+          <div className="flex items-center justify-between">
+            <h3 className="text-lg font-bold text-gray-900">Vendor Registration</h3>
+            <span className="px-2.5 py-1 bg-indigo-50 text-indigo-600 text-[11px] font-semibold rounded-full ring-1 ring-indigo-200">
               Step {currentStep} of {totalSteps}
             </span>
           </div>
         </div>
 
         {currentStep === 1 && (
-          <>
+          <div className="space-y-5">
             {/* Profile Picture Upload */}
-            <div className="mb-8 text-center">
+            <div className="mb-2 text-center">
               <label className="block text-gray-700 text-sm font-semibold mb-4">
-                Profile Picture *
+                Profile Picture <span className="text-rose-500">*</span>
               </label>
               <div className="flex flex-col items-center">
                 <div className="relative mb-4">
-                  <div className="w-32 h-32 rounded-full border-4 border-dashed border-gray-300 flex items-center justify-center overflow-hidden bg-gray-50">
+                  <div className="w-28 h-28 rounded-full ring-1 ring-gray-200 border border-dashed border-gray-300 flex items-center justify-center overflow-hidden bg-gray-50">
                     {profilePreview ? (
                       <img 
                         src={profilePreview} 
@@ -355,14 +364,14 @@ const VendorRegister = () => {
                         className="w-full h-full object-cover"
                       />
                     ) : (
-                      <FaUser className="w-16 h-16 text-gray-400" />
+                      <FaUser className="w-12 h-12 text-gray-300" />
                     )}
                   </div>
                   <label 
                     htmlFor="profile-upload"
-                    className="absolute bottom-0 right-0 bg-indigo-600 text-white p-2 rounded-full cursor-pointer hover:bg-indigo-700 transition"
+                    className="absolute bottom-0 right-0 bg-gradient-to-br from-[#4F46E5] to-[#6D28D9] text-white p-2.5 rounded-full cursor-pointer hover:opacity-90 transition-opacity shadow-sm"
                   >
-                    <FaCamera className="w-4 h-4" />
+                    <FaCamera className="w-3.5 h-3.5" />
                   </label>
                   <input
                     id="profile-upload"
@@ -372,14 +381,14 @@ const VendorRegister = () => {
                     className="hidden"
                   />
                 </div>
-                <p className="text-sm text-gray-500 mb-2">
-                  Click camera icon to upload profile picture
+                <p className="text-sm text-gray-500">
+                  Click the camera icon to upload
                 </p>
-                <p className="text-xs text-gray-400">
-                  Supported: JPG, PNG • Max: 5MB
+                <p className="text-xs text-gray-400 mt-0.5">
+                  JPG, PNG • Max 5MB
                 </p>
                 {errors.profileImage && (
-                  <p className="text-red-500 text-sm mt-2">{errors.profileImage}</p>
+                  <p className="text-rose-500 text-xs mt-2 font-medium">{errors.profileImage}</p>
                 )}
               </div>
             </div>
@@ -431,29 +440,29 @@ const VendorRegister = () => {
               icon={<FaBuilding className="text-gray-400" />}
               required
             />
-          </>
+          </div>
         )}
 
         {currentStep === 2 && (
-          <>
-            <div className="mb-6">
+          <div className="space-y-5">
+            <div>
               <label className="block text-gray-700 text-sm font-semibold mb-2">
-                Shop Address *
+                Shop Address <span className="text-rose-500">*</span>
               </label>
               <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <FaMapMarkerAlt className="text-gray-400" />
+                <div className="absolute top-3.5 left-3.5 pointer-events-none">
+                  <FaMapMarkerAlt className="text-gray-400 h-3.5 w-3.5" />
                 </div>
                 <textarea
                   name="shopAddress"
-                  className="w-full px-4 py-3 pl-10 rounded-lg border-2 border-gray-300 focus:outline-none focus:border-indigo-500 min-h-[80px] resize-none"
+                  className="w-full px-4 py-3 pl-10 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-400 min-h-[90px] resize-none text-sm transition-all"
                   placeholder="Complete shop address..."
                   value={formData.shopAddress}
                   onChange={handleChange}
                   required
                 />
               </div>
-              {errors.shopAddress && <p className="text-red-500 text-sm mt-1">{errors.shopAddress}</p>}
+              {errors.shopAddress && <p className="text-rose-500 text-xs mt-2 font-medium">{errors.shopAddress}</p>}
             </div>
 
             <FormInput
@@ -479,7 +488,7 @@ const VendorRegister = () => {
               required
             />
 
-            <div className="grid md:grid-cols-2 gap-6">
+            <div className="grid md:grid-cols-2 gap-5">
               <FormInput
                 label="Number of Floors *"
                 type="number"
@@ -504,22 +513,24 @@ const VendorRegister = () => {
             </div>
 
             {/* Shop Images Upload */}
-            <div className="mt-8 mb-6">
-              <label className="block text-gray-700 text-sm font-semibold mb-4">
-                Shop Images (Upload multiple images of your shop)
+            <div className="pt-2">
+              <label className="block text-gray-700 text-sm font-semibold mb-3">
+                Shop Images <span className="text-gray-400 font-normal">(optional, up to 10)</span>
               </label>
               
-              <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 mb-4">
+              <div className="border border-dashed border-gray-300 rounded-2xl p-6 bg-gray-50/50">
                 <div className="text-center">
-                  <FaImages className="w-12 h-12 text-gray-400 mx-auto mb-3" />
-                  <p className="text-gray-600 mb-2">Upload photos of your shop/mall</p>
-                  <p className="text-sm text-gray-500 mb-4">
-                    You can upload multiple images (max 10)
+                  <div className="w-12 h-12 rounded-2xl bg-indigo-50 flex items-center justify-center mx-auto mb-3">
+                    <FaImages className="w-5 h-5 text-indigo-400" />
+                  </div>
+                  <p className="text-gray-700 text-sm font-medium mb-1">Upload photos of your shop</p>
+                  <p className="text-xs text-gray-400 mb-4">
+                    Multiple images allowed, max 10
                   </p>
                   
-                  <label className="inline-flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg cursor-pointer hover:bg-indigo-700 transition">
-                    <FaUpload className="w-4 h-4 mr-2" />
-                    Choose Images
+                  <label className="inline-flex items-center px-4 py-2.5 bg-gradient-to-r from-[#4F46E5] to-[#6D28D9] text-white rounded-xl cursor-pointer hover:opacity-90 transition-opacity text-sm font-semibold shadow-sm shadow-indigo-600/25">
+                    <FaUpload className="w-3.5 h-3.5 mr-2" />
+                    Choose images
                     <input
                       type="file"
                       multiple
@@ -532,26 +543,26 @@ const VendorRegister = () => {
               </div>
               
               {shopImages.length > 0 && (
-                <div className="mb-4">
-                  <p className="text-sm font-semibold text-gray-700 mb-2">
-                    Selected Images ({shopImages.length}/10):
+                <div className="mt-4">
+                  <p className="text-xs font-semibold text-gray-500 mb-2.5">
+                    Selected ({shopImages.length}/10)
                   </p>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                     {shopImagePreviews.map((preview, index) => (
-                      <div key={index} className="relative group">
+                      <div key={index} className="relative group rounded-xl overflow-hidden ring-1 ring-gray-200">
                         <img 
                           src={preview} 
                           alt={`Shop image ${index + 1}`}
-                          className="w-full h-32 object-cover rounded-lg"
+                          className="w-full h-28 object-cover"
                         />
                         <button
                           type="button"
                           onClick={() => removeShopImage(index)}
-                          className="absolute top-1 right-1 bg-red-500 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition"
+                          className="absolute top-1.5 right-1.5 bg-rose-500 text-white p-1.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
                         >
-                          <FaTrash className="w-3 h-3" />
+                          <FaTrash className="w-2.5 h-2.5" />
                         </button>
-                        <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-50 text-white text-xs p-1 text-center rounded-b-lg">
+                        <div className="absolute bottom-0 left-0 right-0 bg-black/50 text-white text-[10px] px-1.5 py-1 text-center truncate">
                           {shopImages[index].name}
                         </div>
                       </div>
@@ -561,32 +572,26 @@ const VendorRegister = () => {
               )}
               
               {errors.shopImages && (
-                <p className="text-yellow-600 text-sm mt-2">{errors.shopImages}</p>
+                <p className="text-amber-600 text-xs mt-2 font-medium">{errors.shopImages}</p>
               )}
               
-              <p className="text-xs text-gray-500 mt-2">
-                • Upload clear images of your shop
-                <br />
-                • Supported formats: JPG, PNG
-                <br />
-                • Max file size: 5MB per image
-                <br />
-                • Max images: 10
+              <p className="text-xs text-gray-400 mt-3 leading-relaxed">
+                Clear photos help build trust with shoppers · JPG or PNG · Max 5MB each
               </p>
             </div>
-          </>
+          </div>
         )}
 
         {currentStep === 3 && (
-          <>
-            <div className="grid md:grid-cols-2 gap-6 mb-6">
+          <div className="space-y-5">
+            <div className="grid md:grid-cols-2 gap-5">
               <div>
                 <label className="block text-gray-700 text-sm font-semibold mb-2">
-                  Opening Time *
+                  Opening Time <span className="text-rose-500">*</span>
                 </label>
                 <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <FaClock className="text-gray-400" />
+                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                    <FaClock className="text-gray-400 h-3.5 w-3.5" />
                   </div>
                   <input
                     type="text"
@@ -594,20 +599,20 @@ const VendorRegister = () => {
                     placeholder="09:00 AM"
                     value={formData.vendorShopOpeningTime}
                     onChange={handleChange}
-                    className="w-full px-4 py-3 pl-10 rounded-lg border-2 border-gray-300 focus:outline-none focus:border-indigo-500"
+                    className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-400 text-sm transition-all"
                     required
                   />
                 </div>
-                {errors.vendorShopOpeningTime && <p className="text-red-500 text-sm mt-1">{errors.vendorShopOpeningTime}</p>}
+                {errors.vendorShopOpeningTime && <p className="text-rose-500 text-xs mt-2 font-medium">{errors.vendorShopOpeningTime}</p>}
               </div>
               
               <div>
                 <label className="block text-gray-700 text-sm font-semibold mb-2">
-                  Closing Time *
+                  Closing Time <span className="text-rose-500">*</span>
                 </label>
                 <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <FaClock className="text-gray-400" />
+                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                    <FaClock className="text-gray-400 h-3.5 w-3.5" />
                   </div>
                   <input
                     type="text"
@@ -615,42 +620,42 @@ const VendorRegister = () => {
                     placeholder="09:00 PM"
                     value={formData.vendorShopClosingTime}
                     onChange={handleChange}
-                    className="w-full px-4 py-3 pl-10 rounded-lg border-2 border-gray-300 focus:outline-none focus:border-indigo-500"
+                    className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-400 text-sm transition-all"
                     required
                   />
                 </div>
-                {errors.vendorShopClosingTime && <p className="text-red-500 text-sm mt-1">{errors.vendorShopClosingTime}</p>}
+                {errors.vendorShopClosingTime && <p className="text-rose-500 text-xs mt-2 font-medium">{errors.vendorShopClosingTime}</p>}
               </div>
             </div>
 
-            <div className="mb-6">
+            <div>
               <label className="block text-gray-700 text-sm font-semibold mb-2">
-                Shop Description *
+                Shop Description <span className="text-rose-500">*</span>
               </label>
               <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 pt-3 pointer-events-none">
-                  <FaAlignLeft className="text-gray-400" />
+                <div className="absolute top-3.5 left-3.5 pointer-events-none">
+                  <FaAlignLeft className="text-gray-400 h-3.5 w-3.5" />
                 </div>
                 <textarea
                   name="vendorShopDescription"
-                  className="w-full px-4 py-3 pl-10 rounded-lg border-2 border-gray-300 focus:outline-none focus:border-indigo-500 min-h-[100px] resize-none"
+                  className="w-full px-4 py-3 pl-10 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-400 min-h-[100px] resize-none text-sm transition-all"
                   placeholder="Describe your shop/mall..."
                   value={formData.vendorShopDescription}
                   onChange={handleChange}
                   required
                 />
               </div>
-              {errors.vendorShopDescription && <p className="text-red-500 text-sm mt-1">{errors.vendorShopDescription}</p>}
+              {errors.vendorShopDescription && <p className="text-rose-500 text-xs mt-2 font-medium">{errors.vendorShopDescription}</p>}
             </div>
 
             {/* Password Field with Eye Icon */}
-            <div className="relative mb-6">
+            <div>
               <label className="block text-gray-700 text-sm font-semibold mb-2">
-                Password * <span className="text-gray-500 font-normal">(at least 8 characters)</span>
+                Password <span className="text-rose-500">*</span> <span className="text-gray-400 font-normal">(at least 8 characters)</span>
               </label>
               <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <FaLock className="text-gray-400" />
+                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                  <FaLock className="text-gray-400 h-3.5 w-3.5" />
                 </div>
                 <input
                   type={showPassword ? "text" : "password"}
@@ -658,33 +663,33 @@ const VendorRegister = () => {
                   placeholder="At least 8 characters"
                   value={formData.password}
                   onChange={handleChange}
-                  className={`w-full pl-10 pr-10 py-3 border-2 rounded-lg focus:outline-none focus:border-indigo-500 ${
-                    errors.password ? 'border-red-400' : 'border-gray-300'
+                  className={`w-full pl-10 pr-10 py-3 rounded-xl border text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/30 transition-all ${
+                    errors.password ? 'border-rose-300' : 'border-gray-200 focus:border-indigo-400'
                   }`}
                   required
                 />
                 <button
                   type="button"
                   onClick={togglePasswordVisibility}
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500 hover:text-gray-700 focus:outline-none transition-colors duration-200"
+                  className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-gray-400 hover:text-gray-600 focus:outline-none transition-colors"
                   aria-label={showPassword ? "Hide password" : "Show password"}
                 >
-                  {showPassword ? <FaEyeSlash className="h-5 w-5" /> : <FaEye className="h-5 w-5" />}
+                  {showPassword ? <FaEyeSlash className="h-4 w-4" /> : <FaEye className="h-4 w-4" />}
                 </button>
               </div>
               {errors.password && (
-                <p className="text-red-500 text-sm mt-1">{errors.password}</p>
+                <p className="text-rose-500 text-xs mt-2 font-medium">{errors.password}</p>
               )}
             </div>
 
             {/* Confirm Password Field with Eye Icon */}
-            <div className="relative mb-6">
+            <div>
               <label className="block text-gray-700 text-sm font-semibold mb-2">
-                Confirm Password *
+                Confirm Password <span className="text-rose-500">*</span>
               </label>
               <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <FaCheck className="text-gray-400" />
+                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                  <FaCheck className="text-gray-400 h-3.5 w-3.5" />
                 </div>
                 <input
                   type={showConfirmPassword ? "text" : "password"}
@@ -692,47 +697,47 @@ const VendorRegister = () => {
                   placeholder="Confirm your password"
                   value={formData.confirmPassword}
                   onChange={handleChange}
-                  className={`w-full pl-10 pr-10 py-3 border-2 rounded-lg focus:outline-none focus:border-indigo-500 ${
-                    errors.confirmPassword ? 'border-red-400' : 'border-gray-300'
+                  className={`w-full pl-10 pr-10 py-3 rounded-xl border text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/30 transition-all ${
+                    errors.confirmPassword ? 'border-rose-300' : 'border-gray-200 focus:border-indigo-400'
                   }`}
                   required
                 />
                 <button
                   type="button"
                   onClick={toggleConfirmPasswordVisibility}
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500 hover:text-gray-700 focus:outline-none transition-colors duration-200"
+                  className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-gray-400 hover:text-gray-600 focus:outline-none transition-colors"
                   aria-label={showConfirmPassword ? "Hide password" : "Show password"}
                 >
-                  {showConfirmPassword ? <FaEyeSlash className="h-5 w-5" /> : <FaEye className="h-5 w-5" />}
+                  {showConfirmPassword ? <FaEyeSlash className="h-4 w-4" /> : <FaEye className="h-4 w-4" />}
                 </button>
               </div>
               {errors.confirmPassword && (
-                <p className="text-red-500 text-sm mt-1">{errors.confirmPassword}</p>
+                <p className="text-rose-500 text-xs mt-2 font-medium">{errors.confirmPassword}</p>
               )}
             </div>
 
-            <div className="mt-8 mb-8">
-              <div className="flex items-start">
+            <div className="p-4 bg-gray-50 rounded-2xl ring-1 ring-gray-100">
+              <div className="flex items-start gap-2.5">
                 <input
                   type="checkbox"
                   id="agreement"
-                  className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded mt-1"
+                  className="h-4 w-4 rounded border-gray-300 accent-[#4F46E5] focus:ring-indigo-500 mt-0.5"
                   required
                 />
-                <label htmlFor="agreement" className="ml-2 block text-sm text-gray-700">
+                <label htmlFor="agreement" className="text-sm text-gray-600 leading-relaxed">
                   I agree to the terms and conditions, and confirm that all information provided is accurate
                 </label>
               </div>
             </div>
-          </>
+          </div>
         )}
 
-        <div className="flex justify-between mt-8">
+        <div className="flex gap-3 mt-8 pt-6 border-t border-gray-100">
           {currentStep > 1 && (
             <button
               type="button"
               onClick={prevStep}
-              className="px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-lg font-semibold hover:bg-gray-50 transition duration-300"
+              className="px-5 py-3 ring-1 ring-gray-200 text-gray-600 rounded-xl font-semibold text-sm hover:bg-gray-50 transition-colors"
             >
               Previous
             </button>
@@ -742,9 +747,7 @@ const VendorRegister = () => {
             <button
               type="button"
               onClick={nextStep}
-              className={`px-6 py-3 ${
-                currentStep > 1 ? 'ml-auto' : ''
-              } bg-gradient-to-r from-indigo-600 to-indigo-700 text-white rounded-lg font-semibold hover:from-indigo-700 hover:to-indigo-800 transition duration-300`}
+              className="flex-1 px-6 py-3 bg-gradient-to-r from-[#4F46E5] to-[#6D28D9] text-white rounded-xl font-semibold text-sm hover:opacity-90 transition-opacity shadow-sm shadow-indigo-600/25"
             >
               Continue
             </button>
@@ -752,33 +755,31 @@ const VendorRegister = () => {
             <button
               type="submit"
               disabled={isLoading}
-              className={`px-6 py-3 ${
-                currentStep > 1 ? 'ml-auto' : ''
-              } bg-gradient-to-r from-green-600 to-green-700 text-white rounded-lg font-semibold hover:from-green-700 hover:to-green-800 transition duration-300 disabled:opacity-70`}
+              className="flex-1 px-6 py-3 bg-gradient-to-r from-[#4F46E5] to-[#6D28D9] text-white rounded-xl font-semibold text-sm hover:opacity-90 transition-opacity disabled:opacity-60 disabled:cursor-not-allowed shadow-sm shadow-indigo-600/25"
             >
               {isLoading ? 'Registering...' : 'Complete Registration'}
             </button>
           )}
         </div>
 
-        <div className="mt-8 text-center">
-          <p className="text-gray-600">
+        <div className="mt-7 text-center">
+          <p className="text-gray-500 text-sm">
             Already registered?{' '}
-            <Link to="/vendor/login" className="text-indigo-600 hover:text-indigo-800 font-semibold">
+            <Link to="/vendor/login" className="text-indigo-600 hover:text-indigo-800 font-semibold transition-colors">
               Sign in
             </Link>
           </p>
         </div>
       </form>
 
-      <div className="mt-8 p-6 bg-gradient-to-r from-indigo-50 to-blue-50 rounded-xl border border-indigo-100">
-        <h4 className="font-bold text-gray-900 mb-2">Support</h4>
-        <p className="text-sm text-gray-600 mb-4">
-          Need help with registration? Contact our support team.
+      <div className="mt-6 p-5 bg-indigo-50/60 rounded-2xl ring-1 ring-indigo-100">
+        <h4 className="font-bold text-gray-900 text-sm mb-1">Need a hand?</h4>
+        <p className="text-sm text-gray-500 mb-3">
+          Our support team can help with anything during registration.
         </p>
-        <div className="flex items-center text-sm">
-          <FaPhone className="h-4 w-4 text-indigo-600 mr-2" />
-          <span className="text-gray-700">Support: +1 (555) 123-4567</span>
+        <div className="flex items-center gap-2 text-sm">
+          <FaHeadset className="h-3.5 w-3.5 text-indigo-500" />
+          <span className="text-gray-700 font-medium">+1 (555) 123-4567</span>
         </div>
       </div>
     </AuthLayout>
