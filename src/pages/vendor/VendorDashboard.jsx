@@ -508,14 +508,15 @@ const VendorDashboard = () => {
     }
   };
 
+  // FIXED: backend returns { success, stalls, pagination } — was checking response.pendingStalls
   const loadPendingStalls = async (page = 1) => {
     try {
       setActionLoading(prev => ({ ...prev, pending: true }));
       const response = await vendorApi.getVendorPendingStalls();
 
       let stalls = [];
-      if (response?.success && response.pendingStalls && Array.isArray(response.pendingStalls)) {
-        stalls = response.pendingStalls;
+      if (response?.success && Array.isArray(response.stalls)) {
+        stalls = response.stalls;
       }
 
       setPendingStalls(stalls);
@@ -536,14 +537,15 @@ const VendorDashboard = () => {
     }
   };
 
+  // FIXED: backend returns { success, stalls, pagination } — was checking response.pendingStalls (copy-paste bug)
   const loadApprovedStalls = async (page = 1) => {
     try {
       setActionLoading(prev => ({ ...prev, approved: true }));
       const response = await vendorApi.getVendorApprovedStalls();
 
       let stalls = [];
-      if (response?.success && response.pendingStalls && Array.isArray(response.pendingStalls)) {
-        stalls = response.pendingStalls;
+      if (response?.success && Array.isArray(response.stalls)) {
+        stalls = response.stalls;
       }
 
       setApprovedStalls(stalls);
@@ -564,14 +566,15 @@ const VendorDashboard = () => {
     }
   };
 
+  // FIXED: backend returns { success, stalls, pagination } — was checking response.rejectedStalls
   const loadRejectedStalls = async (page = 1) => {
     try {
       setActionLoading(prev => ({ ...prev, rejected: true }));
       const response = await vendorApi.getVendorRejectedStalls();
 
       let stalls = [];
-      if (response?.success && response.rejectedStalls && Array.isArray(response.rejectedStalls)) {
-        stalls = response.rejectedStalls;
+      if (response?.success && Array.isArray(response.stalls)) {
+        stalls = response.stalls;
       }
 
       setRejectedStalls(stalls);

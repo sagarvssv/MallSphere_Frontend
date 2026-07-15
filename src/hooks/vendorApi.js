@@ -23,7 +23,7 @@ const processQueue = (error = null) => {
 const baseFetch = async (url, options = {}) => {
   return fetch(url, {
     ...options,
-    credentials: 'include',
+    credentials: 'include', // sends/receives httpOnly cookies (accessToken, refreshToken, resetToken)
     headers: {
       ...(options.body && !(options.body instanceof FormData)
         ? { 'Content-Type': 'application/json' }
@@ -275,9 +275,7 @@ export const vendorApi = {
         method: 'POST',
         body: formData,
       });
-      const data = await response.json();
-      if (!response.ok) throw new Error(data?.message || data?.error || 'Registration failed');
-      return data;
+      return await safeParseResponse(response);
     } catch (error) {
       if (error.name === 'TypeError' && error.message.includes('fetch')) {
         throw new Error('Network error. Please check your connection.');
@@ -308,8 +306,7 @@ export const vendorApi = {
         method: 'POST',
         body: JSON.stringify(credentials),
       });
-      const data = await response.json();
-      if (!response.ok) throw new Error(data?.message || data?.error || 'Login failed');
+      const data = await safeParseResponse(response);
       storeAuthData(data);
       return data;
     } catch (error) {
@@ -318,24 +315,34 @@ export const vendorApi = {
     }
   },
 
+  // ── Forgot Password (3-step: request OTP → verify OTP → reset password) ──
+  // Note: verifyForgotPasswordOtp's resetToken now arrives as an httpOnly cookie
+  // set by the backend, not in the JSON body — nothing to read/store here.
+  // resetPassword doesn't need to send it explicitly either; it rides along
+  // automatically since baseFetch always sets credentials: 'include'.
+
   forgotPassword: async (email) => {
     const response = await baseFetch(`${AUTH_URL}/vendor-forgot-password`, {
       method: 'POST',
       body: JSON.stringify({ email }),
     });
-    const data = await response.json();
-    if (!response.ok) throw new Error(data?.message || data?.error || 'Failed to send reset OTP');
-    return data;
+    return safeParseResponse(response);
   },
 
-  resetPassword: async (email, otp, newPassword, confirmPassword) => {
+  verifyForgotPasswordOtp: async (email, otp) => {
+    const response = await baseFetch(`${AUTH_URL}/vendor-verify-forgot-password-otp`, {
+      method: 'POST',
+      body: JSON.stringify({ email, otp }),
+    });
+    return safeParseResponse(response);
+  },
+
+  resetPassword: async (email, newPassword, confirmPassword) => {
     const response = await baseFetch(`${AUTH_URL}/vendor-reset-password`, {
       method: 'POST',
-      body: JSON.stringify({ email, otp, newPassword, confirmPassword }),
+      body: JSON.stringify({ email, newPassword, confirmPassword }),
     });
-    const data = await response.json();
-    if (!response.ok) throw new Error(data?.message || data?.error || 'Failed to reset password');
-    return data;
+    return safeParseResponse(response);
   },
 
   changePassword: async (oldPassword, newPassword, confirmPassword) => {
@@ -458,10 +465,10 @@ export const vendorApi = {
   },
 
   getVendorPendingStalls: () =>
-    apiFetch(`${AUTH_URL}/get-vendor-pending-stalls`, { method: 'GET' }),
+    apiFetch(`${AUTH_URL}/get-pending-stalls`, { method: 'GET' }),
 
   getVendorApprovedStalls: () =>
-    apiFetch(`${AUTH_URL}/get-vendor-approved-stalls`, { method: 'GET' }),
+    apiFetch(`${AUTH_URL}/get-approved-stalls`, { method: 'GET' }),
 
   getVendorRejectedStalls: () =>
     apiFetch(`${AUTH_URL}/get-vendor-rejected-stalls`, { method: 'GET' }),

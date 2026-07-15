@@ -8,8 +8,9 @@ import { FaEnvelope, FaKey, FaArrowLeft, FaCheckCircle, FaLock } from 'react-ico
 const VendorForgotPassword = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  
-  const [step, setStep] = useState(1); // 1: Request OTP, 2: Reset Password
+
+  // 1: Request OTP, 2: Verify OTP, 3: Set New Password
+  const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
     email: location.state?.email || '',
     otp: '',
@@ -35,32 +36,37 @@ const VendorForgotPassword = () => {
 
   const validateStep1 = () => {
     const newErrors = {};
-    
+
     if (!formData.email) {
       newErrors.email = 'Email is required';
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
       newErrors.email = 'Please enter a valid email address';
     }
-    
 
     return newErrors;
   };
 
   const validateStep2 = () => {
     const newErrors = {};
-    
+
     if (!formData.otp) {
       newErrors.otp = 'OTP is required';
     } else if (!/^\d{6}$/.test(formData.otp)) {
       newErrors.otp = 'OTP must be 6 digits';
     }
-    
+
+    return newErrors;
+  };
+
+  const validateStep3 = () => {
+    const newErrors = {};
+
     if (!formData.newPassword) {
       newErrors.newPassword = 'New password is required';
     } else if (formData.newPassword.length < 8) {
       newErrors.newPassword = 'Password must be at least 8 characters';
     }
-    
+
     if (!formData.confirmPassword) {
       newErrors.confirmPassword = 'Please confirm password';
     } else if (formData.newPassword !== formData.confirmPassword) {
@@ -70,6 +76,7 @@ const VendorForgotPassword = () => {
     return newErrors;
   };
 
+  // Step 1 → request OTP
   const handleRequestOTP = async (e) => {
     e.preventDefault();
     setApiError('');
@@ -84,23 +91,19 @@ const VendorForgotPassword = () => {
     setIsLoading(true);
 
     try {
-      console.log('Requesting password reset OTP...');
-      
-      const response = await vendorApi.forgotPassword(
-        formData.email, 
-      );
+      const response = await vendorApi.forgotPassword(formData.email);
 
       console.log('OTP request successful:', response);
       setApiSuccess('OTP has been sent to your email. Please check your inbox.');
-      setStep(2); // Move to password reset step
-      
+      setStep(2);
+
     } catch (error) {
       console.error('OTP request failed:', error);
-      
+
       if (error.message.includes('Network')) {
         setApiError('Network error. Please check your internet connection.');
-      } else if (error.message.includes('not found') || error.message.includes('invalid')) {
-        setApiError('No account found with this email and license number.');
+      } else if (error.message.toLowerCase().includes('not found')) {
+        setApiError('No account found with this email.');
       } else {
         setApiError(error.message || 'Failed to send OTP. Please try again.');
       }
@@ -109,94 +112,145 @@ const VendorForgotPassword = () => {
     }
   };
 
-  const handleResetPassword = async (e) => {
-    e.preventDefault();
+// handleVerifyOtp — simplified, no resetToken tracking
+const handleVerifyOtp = async (e) => {
+  e.preventDefault();
+  if (isLoading) return;
+  setApiError('');
+  setApiSuccess('');
+
+  const validationErrors = validateStep2();
+  if (Object.keys(validationErrors).length > 0) {
+    setErrors(validationErrors);
+    return;
+  }
+
+  setIsLoading(true);
+
+  try {
+    const response = await vendorApi.verifyForgotPasswordOtp(formData.email, formData.otp);
+    console.log('OTP verified:', response);
+    setApiSuccess('OTP verified. Please set your new password.');
+    setStep(3);
+  } catch (error) {
+    console.error('OTP verification failed:', error);
+    if (error.message.includes('Invalid')) {
+      setApiError('Invalid OTP. Please check and try again.');
+    } else if (error.message.includes('expired')) {
+      setApiError('OTP expired. Please request a new one.');
+      setStep(1);
+    } else if (error.message.includes('Too many')) {
+      setApiError('Too many failed attempts. Please request a new OTP.');
+      setStep(1);
+    } else {
+      setApiError(error.message || 'Failed to verify OTP. Please try again.');
+    }
+  } finally {
+    setIsLoading(false);
+  }
+};
+
+// handleResetPassword — drop resetToken argument
+const handleResetPassword = async (e) => {
+  e.preventDefault();
+  if (isLoading) return;
+  setApiError('');
+  setApiSuccess('');
+
+  const validationErrors = validateStep3();
+  if (Object.keys(validationErrors).length > 0) {
+    setErrors(validationErrors);
+    return;
+  }
+
+  setIsLoading(true);
+
+  try {
+    const response = await vendorApi.resetPassword(
+      formData.email,
+      formData.newPassword,
+      formData.confirmPassword
+    );
+    console.log('Password reset successful:', response);
+    setApiSuccess('Password reset successful! You can now login with your new password.');
+
+    setTimeout(() => {
+      navigate('/vendor/login', {
+        state: {
+          message: 'Password reset successful! Please login with your new password.',
+          email: formData.email
+        }
+      });
+    }, 3000);
+  } catch (error) {
+    console.error('Password reset failed:', error);
+    if (error.message.includes('verify OTP again') || error.message.includes('expired')) {
+      setApiError('Your reset session expired. Please verify OTP again.');
+      setStep(2);
+    } else if (error.message.includes('match')) {
+      setApiError('Passwords do not match. Please try again.');
+    } else {
+      setApiError(error.message || 'Password reset failed. Please try again.');
+    }
+  } finally {
+    setIsLoading(false);
+  }
+};
+  const handleResendOtp = async () => {
     setApiError('');
     setApiSuccess('');
-
-    const validationErrors = validateStep2();
-    if (Object.keys(validationErrors).length > 0) {
-      setErrors(validationErrors);
-      return;
-    }
-
     setIsLoading(true);
-
     try {
-      console.log('Resetting password...');
-      
-      const response = await vendorApi.resetPassword(
-        formData.email,
-        formData.otp,
-        formData.newPassword,
-        formData.confirmPassword
-      );
-
-      console.log('Password reset successful:', response);
-      setApiSuccess('Password reset successful! You can now login with your new password.');
-      
-      // Redirect to login after 3 seconds
-      setTimeout(() => {
-        navigate('/vendor/login', {
-          state: {
-            message: 'Password reset successful! Please login with your new password.',
-            email: formData.email
-          }
-        });
-      }, 3000);
-      
+      await vendorApi.resendOtp(formData.email);
+      setApiSuccess('A new OTP has been sent to your email.');
     } catch (error) {
-      console.error('Password reset failed:', error);
-      
-      if (error.message.includes('Invalid') || error.message.includes('expired')) {
-        setApiError('Invalid or expired OTP. Please request a new OTP.');
-      } else if (error.message.includes('match')) {
-        setApiError('Passwords do not match. Please try again.');
-      } else {
-        setApiError(error.message || 'Password reset failed. Please try again.');
-      }
+      setApiError(error.message || 'Failed to resend OTP.');
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleBackToLogin = () => {
-    navigate('/vendor/login');
-  };
-
   const handleBack = () => {
-    if (step === 2) {
+    if (step === 3) {
+      setStep(2);
+    } else if (step === 2) {
       setStep(1);
     } else {
       navigate('/vendor/login');
     }
   };
 
+  const stepLabel = { 1: 'Step 1', 2: 'Step 2', 3: 'Step 3' }[step];
+  const stepTitle = {
+    1: 'Reset Your Password',
+    2: 'Verify OTP',
+    3: 'Set New Password'
+  }[step];
+  const stepSubtitle = {
+    1: 'Enter your email to receive a reset OTP',
+    2: 'Enter the 6-digit OTP sent to your email',
+    3: 'Enter your new password'
+  }[step];
+
   return (
     <AuthLayout type="forgot-password" role="vendor" backLink="/vendor/login">
       <div className="bg-white rounded-2xl p-8 shadow-xl">
         <div className="mb-6">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-xl font-bold text-gray-900">
-              {step === 1 ? 'Reset Your Password' : 'Set New Password'}
-            </h3>
+            <h3 className="text-xl font-bold text-gray-900">{stepTitle}</h3>
             <span className="px-3 py-1 bg-gradient-to-r from-indigo-500 to-indigo-600 text-white text-xs font-semibold rounded-full">
-              {step === 1 ? 'Step 1' : 'Step 2'}
+              {stepLabel}
             </span>
           </div>
-          <p className="text-gray-600 mb-6">
-            {step === 1 ? 'Enter your email and license number to receive a reset OTP' : 'Enter the OTP and your new password'}
-          </p>
+          <p className="text-gray-600 mb-6">{stepSubtitle}</p>
         </div>
 
-        {/* API Error Message */}
         {apiError && (
           <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
             <p className="text-red-700 text-sm">{apiError}</p>
           </div>
         )}
 
-        {/* API Success Message */}
         {apiSuccess && (
           <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg">
             <p className="text-green-700 text-sm">{apiSuccess}</p>
@@ -228,9 +282,9 @@ const VendorForgotPassword = () => {
           </form>
         )}
 
-        {/* Step 2: Reset Password */}
+        {/* Step 2: Verify OTP */}
         {step === 2 && (
-          <form onSubmit={handleResetPassword}>
+          <form onSubmit={handleVerifyOtp}>
             <FormInput
               label="6-digit OTP"
               type="text"
@@ -244,6 +298,39 @@ const VendorForgotPassword = () => {
               maxLength="6"
             />
 
+            <div className="flex space-x-4 mt-6">
+              <button
+                type="button"
+                onClick={handleBack}
+                className="flex-1 px-4 py-3 border-2 border-gray-300 text-gray-700 rounded-lg font-semibold hover:bg-gray-50 transition duration-300"
+              >
+                <FaArrowLeft className="inline mr-2" />
+                Back
+              </button>
+
+              <button
+                type="submit"
+                disabled={isLoading}
+                className="flex-1 bg-gradient-to-r from-indigo-600 to-indigo-700 text-white py-3 px-6 rounded-lg font-semibold hover:from-indigo-700 hover:to-indigo-800 transition duration-300 disabled:opacity-70"
+              >
+                {isLoading ? 'Verifying...' : 'Verify OTP'}
+              </button>
+            </div>
+
+            <button
+              type="button"
+              onClick={handleResendOtp}
+              disabled={isLoading}
+              className="w-full mt-4 text-indigo-600 hover:text-indigo-800 text-sm font-semibold disabled:opacity-50"
+            >
+              Didn't get the code? Resend OTP
+            </button>
+          </form>
+        )}
+
+        {/* Step 3: Reset Password */}
+        {step === 3 && (
+          <form onSubmit={handleResetPassword}>
             <FormInput
               label="New Password"
               type="password"
@@ -277,7 +364,7 @@ const VendorForgotPassword = () => {
                 <FaArrowLeft className="inline mr-2" />
                 Back
               </button>
-              
+
               <button
                 type="submit"
                 disabled={isLoading}
