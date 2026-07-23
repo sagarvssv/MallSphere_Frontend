@@ -39,7 +39,7 @@ const DashboardTabs = ({
   };
 
   return (
-    <div className="bg-white/95 backdrop-blur-sm shadow-sm ring-1 ring-gray-100 sticky top-20 z-10">
+    <div className="bg-white shadow-sm ring-1 ring-gray-100">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <nav className="flex gap-2 overflow-x-auto py-3.5 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           {tabs.map((tab) => {

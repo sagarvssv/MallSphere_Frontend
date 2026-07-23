@@ -288,15 +288,15 @@ const OverviewTab = ({
             </div>
             <div>
               <p className="text-[11px] text-indigo-300">Phone</p>
-              <p className="font-semibold text-white">{vendorData?.phoneNumber || 'N/A'}</p>
+              <p className="font-semibold text-white">{vendorData?.Phone || 'N/A'}</p>
             </div>
             <div>
-              <p className="text-[11px] text-indigo-300">Shop Name</p>
-              <p className="font-semibold text-white">{vendorData?.shopName || 'N/A'}</p>
+              <p className="text-[11px] text-indigo-300">Mall Name</p>
+              <p className="font-semibold text-white">{vendorData?.mallName || 'N/A'}</p>
             </div>
             <div className="pt-3 border-t border-white/10">
               <p className="text-[11px] text-indigo-300">Address</p>
-              <p className="font-medium text-indigo-100 text-sm">{vendorData?.shopAddress || 'N/A'}</p>
+              <p className="font-medium text-indigo-100 text-sm">{vendorData?.Address || 'N/A'}</p>
             </div>
           </div>
         </div>

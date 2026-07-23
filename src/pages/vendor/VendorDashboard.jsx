@@ -939,25 +939,20 @@ const VendorDashboard = () => {
         </div>
 
         {/* Main Content */}
-        <div className="flex-1 min-w-0">
-          <DashboardHeader
-            vendorData={vendorData}
-            pendingStallsCount={pendingStalls.length}
-            onLogout={handleLogout}
-          />
+        <div className="sticky top-0 z-30">
+          <DashboardHeader vendorData={vendorData} pendingStallsCount={pendingStalls.length} onLogout={handleLogout} />
 
-          <DashboardTabs
-            activeTab={activeTab}
-            onTabChange={setActiveTab}
-            pendingCount={pendingStalls.length}
-            approvedCount={approvedStalls.length}
-            rejectedCount={rejectedStalls.length}
-            allStallsCount={allStalls.length}
-            licensesCount={licenses.length}
-            eventsCount={vendorEvents.length}
-            offersCount={totalOffersCount}
-          />
-
+            <DashboardTabs
+              activeTab={activeTab}
+              onTabChange={setActiveTab}
+              pendingCount={pendingStalls.length}
+              approvedCount={approvedStalls.length}
+              rejectedCount={rejectedStalls.length}
+              allStallsCount={allStalls.length}
+              licensesCount={licenses.length}
+              eventsCount={vendorEvents.length}
+              offersCount={totalOffersCount}
+            />
           {error && (
             <ErrorBanner error={error} onDismiss={() => setError('')} />
           )}
@@ -968,7 +963,7 @@ const VendorDashboard = () => {
               approvedStalls={approvedStalls.length}
               rejectedStalls={rejectedStalls.length}
               allStalls={allStalls.length}
-              licenses={licenses.length}
+              licenses={licenses.filter(l => !l.isUsed).length}
             />
 
             <div className="space-y-8">

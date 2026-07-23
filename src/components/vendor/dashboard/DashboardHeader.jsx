@@ -1,7 +1,24 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { FaStore, FaBell, FaSignOutAlt } from 'react-icons/fa';
+import { FaStore, FaBell, FaSignOutAlt, FaCopy, FaCheck } from 'react-icons/fa';
 
 const DashboardHeader = ({ vendorData, pendingStallsCount, onLogout }) => {
+  const [copied, setCopied] = useState(false);
+
+  const vendorId = vendorData?.vendorId;
+
+  const handleCopyId = async (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    try {
+      await navigator.clipboard.writeText(vendorId);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      console.error('Failed to copy vendor ID:', err);
+    }
+  };
+
   return (
     <header className="bg-white/95 backdrop-blur-sm shadow-sm ring-1 ring-gray-100 sticky top-0 z-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -12,15 +29,33 @@ const DashboardHeader = ({ vendorData, pendingStallsCount, onLogout }) => {
               <FaStore className="h-6 w-6 text-white" />
             </div>
             <div className="min-w-0">
-              <h1 className="text-xl md:text-2xl font-bold text-gray-900 truncate">
-                {vendorData?.shopName || 'Vendor Dashboard'}
-              </h1>
+              <div className="flex items-baseline gap-2 min-w-0">
+                <h1 className="text-xl md:text-2xl font-bold text-gray-900 truncate">
+                  MallSphere
+                </h1>
+                <span className="text-sm md:text-base font-medium text-gray-400 truncate">
+                  Vendor Dashboard
+                </span>
+              </div>
               <div className="flex items-center flex-wrap gap-x-2.5 gap-y-1 mt-0.5">
                 <p className="text-sm text-gray-500">
                   Welcome, <span className="font-medium text-gray-700">{vendorData?.name || 'Vendor'}</span>
                 </p>
-                {vendorData?.vendorId && (
-                  <span className="text-xs font-mono text-gray-400">#{vendorData.vendorId}</span>
+                {vendorId && (
+                  <div className="flex items-center gap-1">
+                    <span className="text-xs font-mono text-gray-400">#{vendorId}</span>
+                    <button
+                      onClick={handleCopyId}
+                      className="text-gray-400 hover:text-gray-600 transition-colors"
+                      title="Copy vendor ID"
+                    >
+                      {copied ? (
+                        <FaCheck className="h-2.5 w-2.5 text-emerald-600" />
+                      ) : (
+                        <FaCopy className="h-2.5 w-2.5" />
+                      )}
+                    </button>
+                  </div>
                 )}
                 <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200">
                   <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full" />
