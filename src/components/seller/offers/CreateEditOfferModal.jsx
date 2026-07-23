@@ -420,7 +420,7 @@ const CreateEditOfferModal = ({
                 className={inputCls}
               >
                 <option value="percentage">📊 Percentage (%)</option>
-                <option value="flat">💰 Flat Amount (₹)</option>
+                <option value="flat">💰 Flat Amount (🇦🇪🪙)</option>
               </select>
             </div>
             <div>
