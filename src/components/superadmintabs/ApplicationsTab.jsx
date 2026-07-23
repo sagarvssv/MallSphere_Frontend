@@ -184,7 +184,7 @@ const ApplicationsTab = () => {
       if (response.success) {
         // Update local state
         setAllVendors(prev => prev.map(vendor =>
-          vendor.id === vendorId || vendor._id
+          vendor.id === vendorId || vendor._id === vendorId
             ? { ...vendor, status: 'approved', updatedAt: new Date() }
             : vendor
         ));
