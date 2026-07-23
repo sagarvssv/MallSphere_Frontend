@@ -57,7 +57,7 @@ const ApplicationsTab = () => {
         
         // Transform API data to match our component structure
         const transformedVendors = vendors.map(vendor => ({
-          id: vendor.vendorId || vendor._id,
+          id: vendor._id,
           name: vendor.name || vendor.vendorName || 'N/A',
           email: vendor.email || vendor.vendorEmail || 'N/A',
           phone: vendor.phone || vendor.phoneNumber || vendor.mobile || 'N/A',
