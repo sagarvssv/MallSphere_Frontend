@@ -55,6 +55,19 @@ const VendorRegister = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
+  // Phone validation & normalization helpers (UAE + India)
+  const isValidPhone = (phone) => {
+    const cleaned = phone.replace(/[\s-]/g, '');
+    return /^(?:\+?971|00971|0)?(?:5[0-9]{8}|[23467][0-9]{7})$|^(?:\+?91|0091|0)?[6-9][0-9]{9}$/.test(cleaned);
+  };
+
+  const normalizePhone = (phone) => {
+    const cleaned = phone.replace(/[\s-]/g, '');
+    if (/^(?:\+971|00971)0/.test(cleaned)) return cleaned.replace(/^(\+971|00971)0/, '$1');
+    if (/^(?:\+91|0091)0/.test(cleaned)) return cleaned.replace(/^(\+91|0091)0/, '$1');
+    return cleaned;
+  };
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({
@@ -168,8 +181,8 @@ const VendorRegister = () => {
     if (step === 2) {
       if (!formData.shopAddress.trim()) newErrors.shopAddress = 'Shop address is required';
       if (!formData.phoneNumber.trim()) newErrors.phoneNumber = 'Phone number is required';
-      else if (!/^\+?[\d\s-]{10,}$/.test(formData.phoneNumber.replace(/\s/g, ''))) {
-        newErrors.phoneNumber = 'Valid phone number is required';
+      else if (!isValidPhone(formData.phoneNumber)) {
+        newErrors.phoneNumber = 'Please enter a valid UAE or India phone number';
       }
       if (!formData.vendorLicenseNumber.trim()) newErrors.vendorLicenseNumber = 'License number is required';
       
@@ -257,24 +270,29 @@ const VendorRegister = () => {
     setApiError('');
 
     try {
-      console.log('Submitting form data:', formData);
-      const response = await vendorApi.registerVendor(formData, profileImage, shopImages);
+      const submissionData = {
+        ...formData,
+        phoneNumber: normalizePhone(formData.phoneNumber),
+      };
+
+      console.log('Submitting form data:', submissionData);
+      const response = await vendorApi.registerVendor(submissionData, profileImage, shopImages);
       console.log('API Response:', response);
       
       // Store verification data in localStorage
       localStorage.setItem('pendingVendorVerification', JSON.stringify({
-        email: formData.email,
-        vendorLicenseNumber: formData.vendorLicenseNumber,
-        name: formData.name,
-        mallName: formData.mallName,
+        email: submissionData.email,
+        vendorLicenseNumber: submissionData.vendorLicenseNumber,
+        name: submissionData.name,
+        mallName: submissionData.mallName,
         registrationTime: new Date().toISOString()
       }));
       
       // Redirect to OTP verification page
       navigate('/vendor/verify-otp', {
         state: {
-          email: formData.email,
-          vendorLicenseNumber: formData.vendorLicenseNumber,
+          email: submissionData.email,
+          vendorLicenseNumber: submissionData.vendorLicenseNumber,
           fromRegistration: true,
           message: 'Registration successful! Please verify your email with the OTP sent.'
         }
@@ -469,7 +487,7 @@ const VendorRegister = () => {
               label="Phone Number *"
               type="tel"
               name="phoneNumber"
-              placeholder="9876543210"
+              placeholder="+971 5X XXX XXXX or +91 XXXXX XXXXX"
               value={formData.phoneNumber}
               onChange={handleChange}
               error={errors.phoneNumber}

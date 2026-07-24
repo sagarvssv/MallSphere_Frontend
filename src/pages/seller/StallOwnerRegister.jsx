@@ -62,6 +62,19 @@ const StallOwnerRegister = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
+  // Phone validation & normalization helpers (UAE + India)
+  const isValidPhone = (phone) => {
+    const cleaned = phone.replace(/[\s-]/g, '');
+    return /^(?:\+?971|00971|0)?(?:5[0-9]{8}|[23467][0-9]{7})$|^(?:\+?91|0091|0)?[6-9][0-9]{9}$/.test(cleaned);
+  };
+
+  const normalizePhone = (phone) => {
+    const cleaned = phone.replace(/[\s-]/g, '');
+    if (/^(?:\+971|00971)0/.test(cleaned)) return cleaned.replace(/^(\+971|00971)0/, '$1');
+    if (/^(?:\+91|0091)0/.test(cleaned)) return cleaned.replace(/^(\+91|0091)0/, '$1');
+    return cleaned;
+  };
+
   // Handle text input changes
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -113,6 +126,9 @@ const StallOwnerRegister = () => {
     if (!formData.category.trim()) newErrors.category = 'Category is required';
     if (!formData.sellerShopAddress.trim()) newErrors.sellerShopAddress = 'Shop address is required';
     if (!formData.sellerContactNumber.trim()) newErrors.sellerContactNumber = 'Contact number is required';
+    else if (!isValidPhone(formData.sellerContactNumber)) {
+      newErrors.sellerContactNumber = 'Please enter a valid UAE or India phone number';
+    }
     if (!formData.location.trim()) newErrors.location = 'Location is required';
     if (!formData.floorNumber) newErrors.floorNumber = 'Floor number is required';
     if (!profilePicture) newErrors.profilePicture = 'Profile picture is required';
@@ -135,6 +151,9 @@ const StallOwnerRegister = () => {
       if (!formData.licenseId.trim()) newErrors.licenseId = 'License ID is required';
       if (!formData.category.trim()) newErrors.category = 'Category is required';
       if (!formData.sellerContactNumber.trim()) newErrors.sellerContactNumber = 'Contact number is required';
+      else if (!isValidPhone(formData.sellerContactNumber)) {
+        newErrors.sellerContactNumber = 'Please enter a valid UAE or India phone number';
+      }
       if (!formData.location.trim()) newErrors.location = 'Location is required';
       if (!formData.floorNumber) newErrors.floorNumber = 'Floor number is required';
       if (!formData.sellerShopAddress.trim()) newErrors.sellerShopAddress = 'Shop address is required';
@@ -192,7 +211,7 @@ const StallOwnerRegister = () => {
         shopName: formData.shopName,
         category: formData.category,
         sellerShopAddress: formData.sellerShopAddress,
-        sellerContactNumber: formData.sellerContactNumber,
+        sellerContactNumber: normalizePhone(formData.sellerContactNumber),
         location: formData.location,
         floorNumber: formData.floorNumber,
       };
@@ -411,7 +430,7 @@ const StallOwnerRegister = () => {
                 label="Contact Number"
                 type="tel"
                 name="sellerContactNumber"
-                placeholder="+1 234 567 8900"
+                placeholder="+971 5X XXX XXXX or +91 XXXXX XXXXX"
                 value={formData.sellerContactNumber}
                 onChange={handleChange}
                 error={errors.sellerContactNumber}
