@@ -17,16 +17,12 @@ const OfferRow = ({ offer, onToggle, onEdit, onDelete, onView }) => {
   const discountValue = offer.offerValue || offer.dealValue || offer.flashDealValue || 0;
   const endDate = offer.offerEndDate || offer.endTime || offer.flashDealEndTime;
 
-  // Get the appropriate ID for different operations
+  // Always use the Mongo _id for view/delete operations
   const getViewId = () => {
-    // For regular offers, use offerId (the business ID)
-    if (!isFlashDeal && offer.offerId) return offer.offerId;
-    // For flash deals or fallback, use _id
     return offer._id || offer.id;
   };
 
   const getDeleteId = () => {
-    // For delete, always use _id (MongoDB ObjectId)
     return offer._id || offer.id;
   };
 
